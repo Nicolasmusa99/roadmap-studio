@@ -82,6 +82,14 @@ export const en = {
   blockedDep: '⊘ BLOCKED — dependency blocked',
   blockedUnknown: '⊘ NOT SCHEDULED',
 
+  // ── Story CRUD (US-005, US-008) ───────────────────────────────────────────
+  newStory: 'NEW STORY',
+  copyStory: 'COPY',
+  storyModalSave: 'Add to roadmap',
+  fieldDependsOn: 'DEPENDS ON',
+  deleteStory: 'DELETE',
+  deleteStoryConfirm: 'Delete this story? This cannot be undone.',
+
   // ── Reorder error messages (interpolated) ────────────────────────────────
   errEpicMove:
     'Cannot move STAGE "{epicName}" here: {storyId} depends on {depId} (STAGE "{depEpicName}"). The source STAGE must come after.',

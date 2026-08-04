@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useRoadmapState } from './hooks/useRoadmapState.ts'
+import type { NewStoryInput } from './lib/types.ts'
 import TopBar from './components/TopBar.tsx'
 import LeftPanel from './components/LeftPanel.tsx'
 import TreeView from './components/TreeView.tsx'
@@ -8,6 +9,7 @@ import ViewToggle, { type View } from './components/ViewToggle.tsx'
 import RightPanel from './components/RightPanel.tsx'
 import MilestoneModal from './components/MilestoneModal.tsx'
 import MilestoneDetail from './components/MilestoneDetail.tsx'
+import StoryModal from './components/StoryModal.tsx'
 import { useI18n } from './i18n/I18nContext.tsx'
 
 export default function App() {
@@ -17,6 +19,11 @@ export default function App() {
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null)
   const [view, setView] = useState<View>('tree')
   const [modalOpen, setModalOpen] = useState(false)
+  const [storyModal, setStoryModal] = useState<{
+    epicId: string
+    initialFields?: Partial<NewStoryInput>
+    isCopy?: boolean
+  } | null>(null)
 
   // Story and milestone selection are mutually exclusive: the right panel shows one detail.
   const selectStory = (id: string | null) => { setSelectedMilestoneId(null); setSelectedId(id) }
@@ -40,6 +47,41 @@ export default function App() {
     setModalOpen(false)
     setView('timeline')      // show the new checkpoint on the timeline
     selectMilestone(id)
+  }
+
+  function handleAddStory(epicId: string) {
+    setStoryModal({ epicId })
+  }
+
+  function handleCopyStory() {
+    if (!selectedStory) return
+    setStoryModal({
+      epicId: selectedStory.epicId,
+      initialFields: {
+        title:       selectedStory.title,
+        asA:         selectedStory.asA,
+        iWant:       selectedStory.iWant,
+        soThat:      selectedStory.soThat,
+        roleEfforts: selectedStory.roleEfforts.map(re => ({ ...re })),
+        mvpPct:      selectedStory.mvpPct,
+        mvpEnabled:  selectedStory.mvpEnabled,
+        dependsOn:   [...selectedStory.dependsOn],
+        labels:      [...selectedStory.labels],
+      },
+      isCopy: true,
+    })
+  }
+
+  function handleSaveStory(fields: NewStoryInput) {
+    if (!storyModal) return
+    const id = roadmap.addStory(storyModal.epicId, fields)
+    setStoryModal(null)
+    selectStory(id)
+  }
+
+  function handleDeleteStory(storyId: string) {
+    roadmap.deleteStory(storyId)
+    setSelectedId(null)
   }
 
   return (
@@ -74,6 +116,7 @@ export default function App() {
               onSelect={selectStory}
               onReorderEpic={roadmap.reorderEpic}
               onReorderStory={roadmap.reorderStory}
+              onAddStory={handleAddStory}
             />
           ) : (
             <TimelineView
@@ -107,6 +150,8 @@ export default function App() {
             effortScale={roadmap.state.config.effortScale}
             epicStories={epicStories}
             onUpdateStory={roadmap.updateStory}
+            onCopyStory={selectedStory ? handleCopyStory : undefined}
+            onDeleteStory={handleDeleteStory}
           />
         )}
       </div>
@@ -116,6 +161,20 @@ export default function App() {
           state={roadmap.state}
           onSave={handleCreateMilestone}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {storyModal && (
+        <StoryModal
+          epicId={storyModal.epicId}
+          epics={roadmap.state.epics}
+          teamRoles={roadmap.state.config.teamRoles}
+          effortScale={roadmap.state.config.effortScale}
+          stories={roadmap.state.stories}
+          initialFields={storyModal.initialFields}
+          isCopy={storyModal.isCopy}
+          onSave={handleSaveStory}
+          onClose={() => setStoryModal(null)}
         />
       )}
     </div>

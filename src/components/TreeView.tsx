@@ -12,6 +12,7 @@ interface Props {
   onSelect: (id: string | null) => void
   onReorderEpic: (movingId: string, newIndex: number) => ReorderResult
   onReorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
+  onAddStory: (epicId: string) => void
 }
 
 const COMP_COLORS: Record<string, string> = {
@@ -73,6 +74,7 @@ export default function TreeView({
   onSelect,
   onReorderEpic,
   onReorderStory,
+  onAddStory,
 }: Props) {
   const allIds = useMemo(
     () => [...state.components.map(c => c.id), ...state.epics.map(e => e.id)],
@@ -354,6 +356,13 @@ export default function TreeView({
                               </div>
                             )
                           })}
+                          <button
+                            className="tree-add-story-btn"
+                            data-testid={`add-story-${epic.id}`}
+                            onClick={() => onAddStory(epic.id)}
+                          >
+                            + {t('newStory')}
+                          </button>
                         </div>
                       )}
                     </div>

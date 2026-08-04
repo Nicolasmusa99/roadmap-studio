@@ -1,11 +1,12 @@
 import { useState, useMemo, useCallback } from 'react'
-import type { AppState, ScheduledStory, Story } from '../lib/types'
+import type { AppState, ScheduledStory, Story, NewStoryInput } from '../lib/types'
 import { createInitialState } from '../data/baseline'
 import { schedule } from '../lib/scheduler'
 import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 import { clampMvpPct } from '../lib/validation'
 import { applyEstimationAction } from '../lib/estimation'
+import { removeStoryFromState } from '../lib/mutations'
 
 export interface RoadmapState {
   state: AppState
@@ -15,6 +16,8 @@ export interface RoadmapState {
   toggleRiskLayer: (layerId: string) => void
   toggleMvpStory: (storyId: string) => void
   updateStory: (storyId: string, patch: Partial<Story>) => void
+  addStory: (epicId: string, fields: NewStoryInput) => string
+  deleteStory: (storyId: string) => void
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   addMilestone: (name: string, target: string, storyIds: string[]) => string
@@ -104,6 +107,32 @@ export function useRoadmapState(): RoadmapState {
         ),
       }
     })
+  }, [])
+
+  // Append a new story to the given epic. Returns the generated id.
+  // estimationState: 'manual' if any role has days>0, else 'unestimated'.
+  // isDraft: true when the narrative fields are incomplete.
+  const addStory = useCallback((epicId: string, fields: NewStoryInput): string => {
+    const id = `H-user-${Date.now()}`
+    const estimationState = fields.roleEfforts.some(re => re.days > 0) ? 'manual' : 'unestimated'
+    const isDraft = !fields.title.trim() || !fields.asA.trim() || !fields.iWant.trim() || !fields.soThat.trim()
+    const story: Story = {
+      id, epicId,
+      ...fields,
+      mvpPct: clampMvpPct(fields.mvpPct),
+      estimationState,
+      isDraft,
+      isProtected: false,
+      useCases: [],
+      rules: [],
+      datasetIds: [],
+    }
+    setState(s => ({ ...s, stories: [...s.stories, story] }))
+    return id
+  }, [])
+
+  const deleteStory = useCallback((storyId: string) => {
+    setState(s => removeStoryFromState(s, storyId))
   }, [])
 
   const toggleMvpStory = useCallback((storyId: string) => {
@@ -198,6 +227,8 @@ export function useRoadmapState(): RoadmapState {
     toggleRiskLayer,
     toggleMvpStory,
     updateStory,
+    addStory,
+    deleteStory,
     reorderEpic,
     reorderStory,
     addMilestone,

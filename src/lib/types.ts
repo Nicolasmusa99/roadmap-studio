@@ -143,6 +143,22 @@ export interface ScheduledStory {
   blockedBy?: string  // root-cause storyId of the block (TC-051); own id when it IS the root
 }
 
+// ─── Story creation input ─────────────────────────────────────────────────────
+
+// All user-supplied fields for a new story; the hook computes id, epicId,
+// estimationState, isDraft, isProtected, useCases, rules, and datasetIds.
+export interface NewStoryInput {
+  title: string
+  asA: string
+  iWant: string
+  soThat: string
+  roleEfforts: RoleEffort[]
+  mvpPct: number
+  mvpEnabled: boolean
+  dependsOn: string[]
+  labels: string[]
+}
+
 // ─── Full app state ───────────────────────────────────────────────────────────
 
 export interface AppState {

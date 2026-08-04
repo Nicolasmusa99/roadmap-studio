@@ -536,6 +536,41 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   transition: background 0.15s, color 0.15s;
 }
 .btn-edit:hover { background: var(--oe-green); color: var(--panel); }
+.btn-delete-story {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--warn);
+  background: var(--panel);
+  color: var(--warn);
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+  margin-top: 4px;
+}
+.btn-delete-story:hover { background: var(--warn); color: var(--panel); }
+.tree-add-story-btn {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 5px 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--oe-green);
+  background: transparent;
+  border: 1px dashed var(--oe-green);
+  border-radius: var(--radius);
+  opacity: 0.65;
+  transition: opacity 0.15s, background 0.15s;
+}
+.tree-add-story-btn:hover { opacity: 1; background: color-mix(in srgb, var(--oe-green) 8%, transparent); }
 .rp-edit-label {
   display: block;
   font-family: var(--font-mono);

@@ -83,6 +83,14 @@ export const es: typeof en = {
   blockedDep: '⊘ BLOQUEADO — dependencia bloqueada',
   blockedUnknown: '⊘ SIN PROGRAMAR',
 
+  // ── Story CRUD (US-005, US-008) ───────────────────────────────────────────
+  newStory: 'NUEVA HISTORIA',
+  copyStory: 'COPIAR',
+  storyModalSave: 'Agregar al roadmap',
+  fieldDependsOn: 'DEPENDE DE',
+  deleteStory: 'ELIMINAR',
+  deleteStoryConfirm: '¿Eliminar esta historia? Esta acción no se puede deshacer.',
+
   // ── Reorder error messages (interpolated) ────────────────────────────────
   errEpicMove:
     'No se puede mover el STAGE "{epicName}" aquí: {storyId} depende de {depId} (del STAGE "{depEpicName}"). El STAGE de origen debe ir después.',

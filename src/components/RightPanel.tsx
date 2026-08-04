@@ -11,6 +11,8 @@ interface Props {
   effortScale: EffortScaleStep[]
   epicStories: Story[]
   onUpdateStory: (storyId: string, patch: Partial<Story>) => void
+  onCopyStory?: () => void
+  onDeleteStory?: (storyId: string) => void
 }
 
 const CHIP_CLASS: Record<string, string> = {
@@ -51,6 +53,8 @@ export default function RightPanel({
   effortScale,
   epicStories: _epicStories,
   onUpdateStory,
+  onCopyStory,
+  onDeleteStory,
 }: Props) {
   const { t } = useI18n()
   const [mode, setMode] = useState<'read' | 'edit'>('read')
@@ -289,9 +293,16 @@ export default function RightPanel({
     <aside className="right-panel">
       <div className="rp-header-row">
         <div className="rp-id">{story.id}</div>
-        <button className="btn-edit" data-testid="rp-edit-btn" onClick={enterEdit}>
-          {t('editStory')}
-        </button>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {onCopyStory && (
+            <button className="btn-edit" data-testid="rp-copy-btn" onClick={onCopyStory}>
+              {t('copyStory')}
+            </button>
+          )}
+          <button className="btn-edit" data-testid="rp-edit-btn" onClick={enterEdit}>
+            {t('editStory')}
+          </button>
+        </div>
       </div>
       <div className="rp-title">{story.title}</div>
 
@@ -405,6 +416,24 @@ export default function RightPanel({
               </span>
             ))}
           </div>
+        </>
+      )}
+
+      {/* Delete — only for non-protected stories (US-008) */}
+      {onDeleteStory && !story.isProtected && (
+        <>
+          <div className="rp-sep" />
+          <button
+            className="btn-delete-story"
+            data-testid="rp-delete-btn"
+            onClick={() => {
+              if (window.confirm(t('deleteStoryConfirm'))) {
+                onDeleteStory(story.id)
+              }
+            }}
+          >
+            {t('deleteStory')}
+          </button>
         </>
       )}
     </aside>
