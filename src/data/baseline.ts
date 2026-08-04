@@ -5,19 +5,19 @@ import { getUsHolidays } from '../lib/calendar'
 // ─── Components ───────────────────────────────────────────────────────────────
 
 const COMPONENTS: Component[] = [
-  { id: 'comp-data',      name: 'Data Foundation' },
-  { id: 'comp-viz',       name: 'Visualizer'       },
-  { id: 'comp-risk',      name: 'Risk Insights'    },
-  { id: 'comp-ai',        name: 'AI Plans'         },
+  { id: 'comp-data',      name: 'Data Foundation'      },
+  { id: 'comp-viz',       name: 'Geospatial Visualizer' },
+  { id: 'comp-risk',      name: 'Risk Insights'         },
+  { id: 'comp-ai',        name: 'AI Mitigation Plans'   },
 ]
 
 // ─── Epics — four from the brief, all protected (invariant: not deletable) ────
 
 const EPICS: Epic[] = [
-  { id: 'epic-data', componentId: 'comp-data', name: 'Data Foundation',    isProtected: true },
-  { id: 'epic-viz',  componentId: 'comp-viz',  name: 'Risk Map Viewer',    isProtected: true },
-  { id: 'epic-risk', componentId: 'comp-risk', name: 'Risk Scoring Engine',isProtected: true },
-  { id: 'epic-ai',   componentId: 'comp-ai',   name: 'Resilience Planner', isProtected: true },
+  { id: 'epic-data', componentId: 'comp-data', name: 'Data Foundation',      isProtected: true },
+  { id: 'epic-viz',  componentId: 'comp-viz',  name: 'Geospatial Visualizer', isProtected: true },
+  { id: 'epic-risk', componentId: 'comp-risk', name: 'Risk Insights',         isProtected: true },
+  { id: 'epic-ai',   componentId: 'comp-ai',   name: 'AI Mitigation Plans',   isProtected: true },
 ]
 
 // ─── Stories — 11 stories; effort, deps and MVP% all per-story ───────────────
