@@ -58,6 +58,12 @@ export const en = {
   sectionRoles: 'EFFORT BY ROLE',
   noEffortPlaceholder: '—',
   addRoleLabel: '+ {name}',
+
+  // ── RightPanel — MVP depth (US-017) ──────────────────────────────────────
+  sectionMvp: 'MVP SCOPE',
+  mvpPctLabel: 'MVP % of full effort',
+  mvpEnabledLabel: 'Apply MVP',
+  mvpTradeoff: 'MVP = {pct}% of full effort — {rest}% left out',
   sectionNarrative: 'NARRATIVE',
   narrativeAs: 'As a',
   narrativeWant: ', I want',

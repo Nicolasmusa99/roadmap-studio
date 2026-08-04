@@ -97,6 +97,47 @@ test('US-010: role assignment — remove fullstack, add AI (US-010)', async ({ p
   await expect(page.locator('.right-panel')).not.toContainText('FULLSTACK')
 })
 
+// US-017 / TC-033: mvpPct is editable per story; two stories can have different %.
+test('TC-033: mvpPct editable per story; toggle MVP recalculates (US-017)', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('.tree-story-row', { hasText: 'H-001' }).click()
+  await page.getByTestId('rp-edit-btn').click()
+
+  // The mvpPct input is visible with the current value (H-001 baseline: 55)
+  const pctInput = page.getByTestId('rp-mvp-pct')
+  await expect(pctInput).toBeVisible()
+  await expect(pctInput).toHaveValue('55')
+
+  // Change to 40 and save
+  await pctInput.fill('40')
+  await page.getByTestId('rp-save-btn').click()
+
+  // Read mode reflects 40%
+  await expect(page.locator('.right-panel')).toContainText('40%')
+
+  // Now edit H-002 — its mvpPct (60) is independent of H-001's
+  await page.locator('.tree-story-row', { hasText: 'H-002' }).click()
+  await page.getByTestId('rp-edit-btn').click()
+  await expect(page.getByTestId('rp-mvp-pct')).toHaveValue('60')
+  await page.getByTestId('rp-cancel-btn').click()
+})
+
+// US-017: toggle mvpEnabled persists
+test('US-017: toggle mvpEnabled persists after save', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('.tree-story-row', { hasText: 'H-001' }).click()
+  await page.getByTestId('rp-edit-btn').click()
+
+  // Toggle the MVP checkbox ON (H-001 starts with mvpEnabled=false)
+  const mvpCheckbox = page.getByTestId('rp-mvp-enabled')
+  await expect(mvpCheckbox).not.toBeChecked()
+  await mvpCheckbox.check()
+  await page.getByTestId('rp-save-btn').click()
+
+  // Read mode shows MVP badge
+  await expect(page.locator('.right-panel')).toContainText('ON')
+})
+
 // US-007: selecting a different story while editing exits edit mode without saving.
 test('switching stories while editing exits edit mode without saving (US-007)', async ({ page }) => {
   await page.goto('/')

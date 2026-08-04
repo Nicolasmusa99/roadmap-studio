@@ -59,6 +59,12 @@ export const es: typeof en = {
   sectionRoles: 'ESFUERZO POR ROL',
   noEffortPlaceholder: '—',
   addRoleLabel: '+ {name}',
+
+  // ── RightPanel — profundidad MVP (US-017) ─────────────────────────────────
+  sectionMvp: 'ALCANCE MVP',
+  mvpPctLabel: 'MVP % del esfuerzo full',
+  mvpEnabledLabel: 'Aplicar MVP',
+  mvpTradeoff: 'MVP = {pct}% del esfuerzo full — {rest}% queda afuera',
   sectionNarrative: 'NARRATIVA',
   narrativeAs: 'Como',
   narrativeWant: ', quiero',

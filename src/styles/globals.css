@@ -655,6 +655,38 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .rp-role-add-btn:hover { border-color: var(--oe-green); color: var(--oe-green); }
 
+/* MVP edit section (US-017) */
+.rp-mvp-row { display: flex; flex-direction: column; gap: 8px; }
+.rp-mvp-check-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.rp-mvp-check-label input[type="checkbox"] { accent-color: var(--oe-green); cursor: pointer; }
+.rp-mvp-pct-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rp-mvp-pct-input {
+  width: 64px;
+  text-align: right;
+  flex: none;
+}
+.rp-mvp-tradeoff {
+  font-size: 11px;
+  color: var(--warn);
+  font-family: var(--font-mono);
+  margin-top: 6px;
+  line-height: 1.4;
+  background: var(--warn-weak);
+  padding: 5px 8px;
+  border-radius: var(--radius);
+}
+
 /* ─── Drag & drop ────────────────────────────────────────────────────────────── */
 
 /* Handle — always in flex flow (never absolute/hidden), low-contrast by default */

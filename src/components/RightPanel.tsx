@@ -222,6 +222,46 @@ export default function RightPanel({
           </div>
         )}
 
+        {/* ── MVP depth (US-017) ─────────────────────────────────────────── */}
+        <div className="rp-sep" />
+        <div className="rp-edit-label">{t('sectionMvp')}</div>
+
+        <div className="rp-mvp-row">
+          <label className="rp-mvp-check-label">
+            <input
+              type="checkbox"
+              data-testid="rp-mvp-enabled"
+              checked={draft.mvpEnabled}
+              onChange={e => setDraft(prev => prev ? { ...prev, mvpEnabled: e.target.checked } : prev)}
+            />
+            <span>{t('mvpEnabledLabel')}</span>
+          </label>
+          <div className="rp-mvp-pct-row">
+            <span className="rp-edit-label" style={{ margin: 0 }}>{t('mvpPctLabel')}</span>
+            <input
+              type="number"
+              className="rp-edit-input rp-mvp-pct-input"
+              data-testid="rp-mvp-pct"
+              min={0}
+              max={100}
+              value={draft.mvpPct}
+              onChange={e => setDraft(prev => prev
+                ? { ...prev, mvpPct: Math.min(100, Math.max(0, Number(e.target.value))) }
+                : prev
+              )}
+            />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-muted)' }}>%</span>
+          </div>
+        </div>
+
+        {draft.mvpEnabled && (
+          <div className="rp-mvp-tradeoff">
+            {t('mvpTradeoff')
+              .replace('{pct}', String(draft.mvpPct))
+              .replace('{rest}', String(100 - draft.mvpPct))}
+          </div>
+        )}
+
         <div className="rp-btn-row">
           <button className="btn-save" data-testid="rp-save-btn" onClick={handleSave}>
             {t('saveStory')}
