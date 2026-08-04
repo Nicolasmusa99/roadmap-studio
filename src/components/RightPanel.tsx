@@ -370,6 +370,13 @@ export default function RightPanel({
           <span className="story-badge story-badge--mvp">{t('mvpActive')}</span>
         )}
       </div>
+      {story.mvpEnabled && (
+        <div className="rp-mvp-tradeoff">
+          {t('mvpTradeoff')
+            .replace('{pct}', String(story.mvpPct))
+            .replace('{rest}', String(100 - story.mvpPct))}
+        </div>
+      )}
 
       {/* Dependencies */}
       {story.dependsOn.length > 0 && (
