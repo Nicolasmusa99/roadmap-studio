@@ -962,6 +962,50 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   text-transform: uppercase;
   opacity: 0.5;
 }
+/* Timeline legend row */
+.tl-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+  flex-wrap: wrap;
+}
+.tl-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.tl-legend-swatch {
+  display: inline-block;
+  width: 24px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.tl-legend-swatch--bar     { background: var(--oe-green); opacity: 0.85; }
+.tl-legend-swatch--epic    { background: var(--oe-green-weak); border: 1px solid rgba(30,122,77,0.35); }
+.tl-legend-swatch--target  {
+  background: transparent;
+  border-top: 2px dashed var(--ink-muted);
+  border-radius: 0;
+  height: 0;
+  width: 24px;
+}
+.tl-legend-swatch--forecast {
+  background: transparent;
+  border-top: 2px solid var(--warn);
+  border-radius: 0;
+  height: 0;
+  width: 24px;
+}
+
 .tl-grid { min-width: 640px; position: relative; --tl-gutter: 260px; }
 
 /* Rows share a fixed gutter + a flexible track so every bar aligns on one axis */

@@ -93,6 +93,26 @@ export default function TimelineView({
 
   return (
     <main className="timeline-view" data-testid="timeline-view">
+      {/* Legend — explains every visual element in one glance */}
+      <div className="tl-legend" aria-label="Timeline legend">
+        <span className="tl-legend-item">
+          <span className="tl-legend-swatch tl-legend-swatch--bar" />
+          scheduled work
+        </span>
+        <span className="tl-legend-item">
+          <span className="tl-legend-swatch tl-legend-swatch--epic" />
+          epic window
+        </span>
+        <span className="tl-legend-item">
+          <span className="tl-legend-swatch tl-legend-swatch--target" />
+          target (committed)
+        </span>
+        <span className="tl-legend-item">
+          <span className="tl-legend-swatch tl-legend-swatch--forecast" />
+          forecast (projected)
+        </span>
+      </div>
+
       <div className="tl-grid">
         {/* Axis */}
         <div className="tl-row tl-axis">
