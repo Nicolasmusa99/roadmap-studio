@@ -90,3 +90,14 @@ La sugerencia (promedio) solo aplica al primer estado y NUNCA maneja el roadmap:
 Heurística transparente, no veredicto. Objetivos: velocidad (qué tan temprano cae el 1er milestone
 de valor), cobertura (% de capas activas cubiertas en Full), derisking (qué tan temprano se ataca el
 epic más incierto). La fórmula de cada uno siempre a la vista. Nunca "X% correcto".
+
+## Decisiones de borde
+
+Comportamientos no obvios que emergen de invariantes, elegidos por legibilidad y consistencia.
+
+> **Borde-8 — Roles con days=0 se descartan al guardar.**
+> Si el PM agrega un rol en modo edición pero nunca elige un valor de escala (days === 0), ese
+> rol se filtra antes de llamar a `updateStory`. Razón: un rol sin esfuerzo no tiene semántica de
+> scheduling (no se puede asignar duración ni bloquear recursos). Mantenerlo en el store crearía
+> entradas incoherentes. El comportamiento es silencioso — el PM simplemente ve que el rol no
+> aparece en lectura, lo que es la señal correcta para volver a editarlo y elegir un valor.

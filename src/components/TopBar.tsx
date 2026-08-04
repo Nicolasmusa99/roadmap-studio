@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function TopBar({ datasets, onReset }: Props) {
-  const { lang, setLang, t } = useI18n()
+  const { t } = useI18n()
 
   function handleReset() {
     if (window.confirm(t('resetConfirm'))) onReset()
@@ -23,22 +23,6 @@ export default function TopBar({ datasets, onReset }: Props) {
             {d.name} · {d.frequency}
           </span>
         ))}
-      </div>
-
-      {/* Language selector */}
-      <div className="lang-selector" role="group" aria-label="Language">
-        <button
-          className={`lang-btn${lang === 'en' ? ' lang-btn--active' : ''}`}
-          onClick={() => setLang('en')}
-        >
-          English
-        </button>
-        <button
-          className={`lang-btn${lang === 'es' ? ' lang-btn--active' : ''}`}
-          onClick={() => setLang('es')}
-        >
-          Español
-        </button>
       </div>
 
       <button className="btn-reset" onClick={handleReset}>

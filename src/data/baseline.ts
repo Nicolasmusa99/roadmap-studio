@@ -269,9 +269,9 @@ const CONFIG: AppConfig = {
   },
   effortScale: [...DEFAULT_EFFORT_SCALE], // PM-editable copy
   riskLayers: [
-    { id: 'layer-calor',      name: 'calor',      active: true },
-    { id: 'layer-inundacion', name: 'inundación', active: true },
-    { id: 'layer-energia',    name: 'energía',    active: true },
+    { id: 'layer-calor',      name: 'heat',   active: true },
+    { id: 'layer-inundacion', name: 'flood',  active: true },
+    { id: 'layer-energia',    name: 'energy', active: true },
   ],
   teamRoles: [
     { id: 'data',      name: 'Data Engineer',       people: 1 },
