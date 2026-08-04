@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { removeStoryFromState, removeEpicFromState } from '../mutations'
+import {
+  removeStoryFromState,
+  removeEpicFromState,
+  dependentsOf,
+  epicDeletionImpact,
+} from '../mutations'
 import type { AppState } from '../types'
 
 // ─── Minimal fixture ──────────────────────────────────────────────────────────
@@ -96,5 +101,37 @@ describe('removeEpicFromState', () => {
   it('does not remove stories from other epics', () => {
     const result = removeEpicFromState(BASE, 'e1')
     expect(result.stories.find(s => s.id === 'S3')).toBeDefined()
+  })
+})
+
+// ─── dependentsOf ─────────────────────────────────────────────────────────────
+
+describe('dependentsOf', () => {
+  it('finds every story that depends on the target (across epics)', () => {
+    // S2 (same epic) and S3 (other epic) both depend on S1
+    const deps = dependentsOf(BASE, 'S1')
+    expect(deps.map(s => s.id).sort()).toEqual(['S2', 'S3'])
+  })
+
+  it('is empty for a story nobody depends on', () => {
+    expect(dependentsOf(BASE, 'S3')).toEqual([])
+  })
+})
+
+// ─── epicDeletionImpact ───────────────────────────────────────────────────────
+
+describe('epicDeletionImpact', () => {
+  it('reports the cascade (stories inside) and external dependents', () => {
+    const impact = epicDeletionImpact(BASE, 'e1')
+    // e1 holds S1 and S2 → both cascade
+    expect(impact.cascade.map(s => s.id).sort()).toEqual(['S1', 'S2'])
+    // S3 (in e2) depends on S1 → it is an external dependent whose ref gets cleaned
+    expect(impact.externalDependents.map(s => s.id)).toEqual(['S3'])
+  })
+
+  it('has no external dependents when nothing outside points in', () => {
+    const impact = epicDeletionImpact(BASE, 'e2')
+    expect(impact.cascade.map(s => s.id)).toEqual(['S3'])
+    expect(impact.externalDependents).toEqual([])
   })
 })

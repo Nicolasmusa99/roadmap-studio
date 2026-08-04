@@ -3,6 +3,7 @@ import { createInitialState } from '../../data/baseline'
 import { schedule } from '../scheduler'
 import { storiesInScope, storyDegradation } from '../threats'
 import { milestoneForecast } from '../milestones'
+import { removeStoryFromState, dependentsOf } from '../mutations'
 import type { AppState } from '../types'
 
 // End-to-end through the exact production pipeline (threats → scheduler → forecast),
@@ -74,5 +75,31 @@ describe('heat↔energy degradation cross on the baseline', () => {
       l.name === 'energy' ? { ...l, active: false } : l,
     )
     expect(storiesInScope(st.stories, st.config.riskLayers).some(s => s.id === 'H-018')).toBe(false)
+  })
+})
+
+describe('deleting a story with dependents keeps the timeline intact', () => {
+  it('removing H-004 strips it from every dependent — no orphans, all survivors schedule', () => {
+    const st0 = createInitialState()
+    // H-004 (base map) gates H-005, H-006 and H-017 (energy overlay).
+    const deps = dependentsOf(st0, 'H-004').map(s => s.id)
+    expect(deps).toEqual(expect.arrayContaining(['H-005', 'H-006', 'H-017']))
+
+    const st1 = removeStoryFromState(st0, 'H-004')
+    expect(st1.stories.some(s => s.id === 'H-004')).toBe(false)
+    // No surviving story still points at the deleted id (this is what would break the scheduler).
+    for (const s of st1.stories) expect(s.dependsOn).not.toContain('H-004')
+
+    const sched = schedule({
+      stories: storiesInScope(st1.stories, st1.config.riskLayers),
+      teamRoles: st1.config.teamRoles,
+      calendarConfig: st1.config.calendarConfig,
+    })
+    // Nothing falls through the scheduler, and the former dependents now schedule
+    // cleanly (they lost the H-004 gate, they are not blocked by a dangling ref).
+    expect(sched.every(s => s.blockedReason !== 'not-scheduled')).toBe(true)
+    for (const id of ['H-005', 'H-006', 'H-017']) {
+      expect(sched.find(s => s.storyId === id)!.blocked).toBe(false)
+    }
   })
 })

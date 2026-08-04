@@ -110,6 +110,9 @@ export const en = {
   addEpic: 'ADD STAGE',
   newEpicPlaceholder: 'Stage name…',
   epicDeleteConfirm: 'Delete this stage and all its stories? This cannot be undone.',
+  // Dependency-aware stage deletion (cascade): states how many stories go and who outside depends on them.
+  deleteEpicConfirm: 'Delete stage "{name}" and its {n} stories? This cannot be undone.',
+  deleteEpicConfirmDeps: 'Delete stage "{name}" and its {n} stories? {m} stories outside this stage depend on them ({ids}); those dependencies will be cleaned up so nothing is orphaned. This cannot be undone.',
   epicRenameSave: 'Rename',
 
   // ── Story CRUD (US-005, US-008) ───────────────────────────────────────────
@@ -119,6 +122,8 @@ export const en = {
   fieldDependsOn: 'DEPENDS ON',
   deleteStory: 'DELETE',
   deleteStoryConfirm: 'Delete this story? This cannot be undone.',
+  // Dependency-aware story deletion: names the stories that depend on this one.
+  deleteStoryConfirmDeps: 'Delete {id}? {n} stories depend on it ({ids}); their dependency on {id} will be removed so nothing is left orphaned. This cannot be undone.',
 
   // ── Reorder error messages (interpolated) ────────────────────────────────
   errEpicMove:

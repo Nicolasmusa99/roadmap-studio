@@ -443,18 +443,15 @@ export default function RightPanel({
         </>
       )}
 
-      {/* Delete — only for non-protected stories (US-008) */}
-      {onDeleteStory && !story.isProtected && (
+      {/* Delete — any story is deletable in-session; confirm + dependency cleanup
+          happen in App.handleDeleteStory. Reset restores the baseline (invariant #13). */}
+      {onDeleteStory && (
         <>
           <div className="rp-sep" />
           <button
             className="btn-delete-story"
             data-testid="rp-delete-btn"
-            onClick={() => {
-              if (window.confirm(t('deleteStoryConfirm'))) {
-                onDeleteStory(story.id)
-              }
-            }}
+            onClick={() => onDeleteStory(story.id)}
           >
             {t('deleteStory')}
           </button>

@@ -3,6 +3,7 @@ import type { AppState, ScheduledStory } from '../lib/types.ts'
 import type { ReorderResult } from '../lib/reorder.ts'
 import { epicEffortDays, epicWindow, componentEffortDays } from '../lib/aggregation.ts'
 import { storiesInScope, storyDegradation } from '../lib/threats.ts'
+import { epicDeletionImpact } from '../lib/mutations.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 import Toast from './Toast.tsx'
@@ -299,20 +300,29 @@ export default function TreeView({
                           >
                             ✎
                           </button>
-                          {!epic.isProtected && (
-                            <button
-                              className="tree-epic-action-btn tree-epic-action-btn--danger"
-                              data-testid={`epic-delete-btn-${epic.id}`}
-                              title="Delete stage"
-                              onClick={() => {
-                                if (window.confirm(t('epicDeleteConfirm'))) {
-                                  onDeleteEpic(epic.id)
-                                }
-                              }}
-                            >
-                              ×
-                            </button>
-                          )}
+                          {/* Any stage is deletable in-session (reset restores the
+                              baseline). Cascade: removes the stage + its stories and
+                              cleans up dependsOn refs in survivors — the confirm states
+                              the full blast radius (count + external dependents). */}
+                          <button
+                            className="tree-epic-action-btn tree-epic-action-btn--danger"
+                            data-testid={`epic-delete-btn-${epic.id}`}
+                            title="Delete stage"
+                            onClick={() => {
+                              const { cascade, externalDependents } = epicDeletionImpact(state, epic.id)
+                              const msg = externalDependents.length
+                                ? t('deleteEpicConfirmDeps', {
+                                    name: epic.name,
+                                    n: String(cascade.length),
+                                    m: String(externalDependents.length),
+                                    ids: externalDependents.map(s => s.id).join(', '),
+                                  })
+                                : t('deleteEpicConfirm', { name: epic.name, n: String(cascade.length) })
+                              if (window.confirm(msg)) onDeleteEpic(epic.id)
+                            }}
+                          >
+                            ×
+                          </button>
                         </span>
                       </div>
 

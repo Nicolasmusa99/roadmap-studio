@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useRoadmapState } from './hooks/useRoadmapState.ts'
+import { dependentsOf } from './lib/mutations.ts'
 import type { NewStoryInput } from './lib/types.ts'
 import TopBar from './components/TopBar.tsx'
 import LeftPanel from './components/LeftPanel.tsx'
@@ -80,7 +81,18 @@ export default function App() {
     selectStory(id)
   }
 
+  // Dependency-aware delete: surface who depends on this story before removing it.
+  // removeStoryFromState then strips the reference from those dependents (no orphans).
   function handleDeleteStory(storyId: string) {
+    const deps = dependentsOf(roadmap.state, storyId)
+    const msg = deps.length
+      ? t('deleteStoryConfirmDeps', {
+          id: storyId,
+          n: String(deps.length),
+          ids: deps.map(d => d.id).join(', '),
+        })
+      : t('deleteStoryConfirm')
+    if (!window.confirm(msg)) return
     roadmap.deleteStory(storyId)
     setSelectedId(null)
   }

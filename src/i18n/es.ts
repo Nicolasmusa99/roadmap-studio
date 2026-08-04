@@ -111,6 +111,9 @@ export const es: typeof en = {
   addEpic: 'AGREGAR STAGE',
   newEpicPlaceholder: 'Nombre del stage…',
   epicDeleteConfirm: '¿Eliminar este stage y todas sus historias? Esta acción no se puede deshacer.',
+  // Borrado de stage dependency-aware (cascada): dice cuántas historias se van y quién afuera depende.
+  deleteEpicConfirm: '¿Eliminar el stage "{name}" y sus {n} historias? Esta acción no se puede deshacer.',
+  deleteEpicConfirmDeps: '¿Eliminar el stage "{name}" y sus {n} historias? {m} historias fuera de este stage dependen de ellas ({ids}); esas dependencias se van a limpiar para no dejar nada huérfano. Esta acción no se puede deshacer.',
   epicRenameSave: 'Renombrar',
 
   // ── Story CRUD (US-005, US-008) ───────────────────────────────────────────
@@ -120,6 +123,8 @@ export const es: typeof en = {
   fieldDependsOn: 'DEPENDE DE',
   deleteStory: 'ELIMINAR',
   deleteStoryConfirm: '¿Eliminar esta historia? Esta acción no se puede deshacer.',
+  // Borrado de historia dependency-aware: nombra las historias que dependen de esta.
+  deleteStoryConfirmDeps: '¿Eliminar {id}? {n} historias dependen de ella ({ids}); su dependencia de {id} se va a quitar para no dejar nada huérfano. Esta acción no se puede deshacer.',
 
   // ── Reorder error messages (interpolated) ────────────────────────────────
   errEpicMove:
