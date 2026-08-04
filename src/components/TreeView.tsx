@@ -1,9 +1,10 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types.ts'
 import type { ReorderResult } from '../lib/reorder.ts'
 import { epicEffortDays, epicWindow, componentEffortDays } from '../lib/aggregation.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
+import Toast from './Toast.tsx'
 
 interface Props {
   state: AppState
@@ -51,21 +52,6 @@ interface DragItem {
 interface DropTarget {
   id: string
   pos: 'before' | 'after'
-}
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-
-function Toast({ message, onClose }: { message: string; onClose: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 5000)
-    return () => clearTimeout(t)
-  }, [onClose])
-  return (
-    <div className="drag-toast" role="alert" onClick={onClose}>
-      <span className="drag-toast-icon">⊘</span>
-      <span>{message}</span>
-    </div>
-  )
 }
 
 // ─── TreeView ─────────────────────────────────────────────────────────────────
