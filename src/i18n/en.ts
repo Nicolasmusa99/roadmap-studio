@@ -53,6 +53,11 @@ export const en = {
   fieldAsA: 'AS A',
   fieldIWant: 'I WANT',
   fieldSoThat: 'SO THAT',
+
+  // ── RightPanel — effort + roles (US-009 / US-010) ────────────────────────
+  sectionRoles: 'EFFORT BY ROLE',
+  noEffortPlaceholder: '—',
+  addRoleLabel: '+ {name}',
   sectionNarrative: 'NARRATIVE',
   narrativeAs: 'As a',
   narrativeWant: ', I want',

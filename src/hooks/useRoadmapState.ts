@@ -5,6 +5,7 @@ import { schedule } from '../lib/scheduler'
 import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 import { clampMvpPct } from '../lib/validation'
+import { applyEstimationAction } from '../lib/estimation'
 
 export interface RoadmapState {
   state: AppState
@@ -68,8 +69,10 @@ export function useRoadmapState(): RoadmapState {
   }, [])
 
   // Merge patch into the story identified by storyId.
-  // mvpPct is clamped defensively (TC-050). estimationState transitions
-  // (applyEstimationAction) are handled here in US-009 when roleEfforts change.
+  // - mvpPct: clamped defensively via clampMvpPct (TC-050).
+  // - roleEfforts: if changed, applies applyEstimationAction to transition
+  //   estimationState (TC-048). Structural comparison prevents a no-op save
+  //   from flipping an 'auto' story to 'unestimated'.
   const updateStory = useCallback((storyId: string, patch: Partial<Story>) => {
     setState(s => {
       const story = s.stories.find(st => st.id === storyId)
@@ -79,10 +82,25 @@ export function useRoadmapState(): RoadmapState {
         ? clampMvpPct(patch.mvpPct)
         : story.mvpPct
 
+      let estimationState = story.estimationState
+      if (patch.roleEfforts !== undefined) {
+        const prev = story.roleEfforts
+        const next = patch.roleEfforts
+        const changed =
+          next.length !== prev.length ||
+          next.some((re, i) => re.roleId !== prev[i]?.roleId || re.days !== prev[i]?.days)
+        if (changed) {
+          estimationState = applyEstimationAction(
+            story.estimationState,
+            next.length > 0 ? 'load' : 'clear',
+          )
+        }
+      }
+
       return {
         ...s,
         stories: s.stories.map(st =>
-          st.id === storyId ? { ...story, ...patch, mvpPct } : st,
+          st.id === storyId ? { ...story, ...patch, mvpPct, estimationState } : st,
         ),
       }
     })

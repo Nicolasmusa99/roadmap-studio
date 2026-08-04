@@ -48,7 +48,7 @@ export default function RightPanel({
   scheduled,
   daysPerWeek,
   teamRoles,
-  effortScale: _effortScale,
+  effortScale,
   epicStories: _epicStories,
   onUpdateStory,
 }: Props) {
@@ -78,9 +78,12 @@ export default function RightPanel({
     setMode('edit')
   }
 
+  // Roles added but never given an effort (days === 0) are discarded on save —
+  // the PM added the row but didn't pick a scale value, so there's nothing to schedule.
   function handleSave() {
     if (!draft) return
-    onUpdateStory(draft.id, draft)
+    const cleanedRoleEfforts = draft.roleEfforts.filter(re => re.days > 0)
+    onUpdateStory(draft.id, { ...draft, roleEfforts: cleanedRoleEfforts })
     setMode('read')
     setDraft(null)
   }
@@ -96,6 +99,42 @@ export default function RightPanel({
     const set = (field: keyof Story) =>
       (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         setDraft(prev => prev ? { ...prev, [field]: e.target.value } : prev)
+
+    // Roles not yet assigned in the draft
+    const assignedIds = new Set(draft.roleEfforts.map(re => re.roleId))
+    const unassignedRoles = teamRoles.filter(r => !assignedIds.has(r.id))
+
+    function setEffort(roleId: string, days: number) {
+      setDraft(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          roleEfforts: prev.roleEfforts.map(re =>
+            re.roleId === roleId ? { ...re, days } : re,
+          ),
+        }
+      })
+    }
+
+    function addRole(roleId: string) {
+      setDraft(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          roleEfforts: [...prev.roleEfforts, { roleId, days: 0 }],
+        }
+      })
+    }
+
+    function removeRole(roleId: string) {
+      setDraft(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          roleEfforts: prev.roleEfforts.filter(re => re.roleId !== roleId),
+        }
+      })
+    }
 
     return (
       <aside className="right-panel">
@@ -139,6 +178,49 @@ export default function RightPanel({
           value={draft.soThat}
           onChange={set('soThat')}
         />
+
+        {/* ── Effort by role (US-009 / US-010) ───────────────────────────── */}
+        <div className="rp-edit-label">{t('sectionRoles')}</div>
+
+        {draft.roleEfforts.map(re => (
+          <div key={re.roleId} className="rp-role-row" data-testid={`rp-role-row-${re.roleId}`}>
+            <span className="rp-role-tag">{re.roleId.toUpperCase()}</span>
+            <select
+              className="rp-effort-select"
+              data-testid={`rp-effort-select-${re.roleId}`}
+              value={re.days}
+              onChange={e => setEffort(re.roleId, Number(e.target.value))}
+            >
+              <option value={0}>{t('noEffortPlaceholder')}</option>
+              {effortScale.map(step => (
+                <option key={step.days} value={step.days}>{step.label}</option>
+              ))}
+            </select>
+            <button
+              className="rp-role-remove"
+              data-testid={`rp-role-remove-${re.roleId}`}
+              onClick={() => removeRole(re.roleId)}
+              aria-label={`Remove ${re.roleId}`}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+
+        {unassignedRoles.length > 0 && (
+          <div className="rp-role-add-row">
+            {unassignedRoles.map(r => (
+              <button
+                key={r.id}
+                className="rp-role-add-btn"
+                data-testid={`rp-role-add-${r.id}`}
+                onClick={() => addRole(r.id)}
+              >
+                + {r.id.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="rp-btn-row">
           <button className="btn-save" data-testid="rp-save-btn" onClick={handleSave}>

@@ -39,6 +39,64 @@ test('TC-011: save persists edit; cancel reverts (US-007)', async ({ page }) => 
   await expect(page.getByTestId('rp-narrative')).not.toContainText('Product Owner')
 })
 
+// US-009 / TC-013: the effort selector offers exactly the configured scale — no free input.
+// Each role's selector has testid rp-effort-select-{roleId}; TC-013 grabs the first one.
+test('TC-013: effort selector shows configured scale; no free text input (US-009)', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('.tree-story-row', { hasText: 'H-001' }).click()
+  await page.getByTestId('rp-edit-btn').click()
+
+  // The effort selector for the first role must be a <select>, not a text input
+  const firstSelect = page.locator('[data-testid^="rp-effort-select-"]').first()
+  await expect(firstSelect).toBeVisible()
+  const tag = await firstSelect.evaluate(el => el.tagName.toLowerCase())
+  expect(tag).toBe('select')
+
+  // Options include exactly the default scale labels (from config.effortScale, not hardcoded)
+  const labels = await firstSelect.evaluate(el => {
+    const select = el as HTMLSelectElement
+    return Array.from(select.options).map(o => o.text)
+  })
+  expect(labels).toContain('1d')
+  expect(labels).toContain('2d')
+  expect(labels).toContain('3d')
+  expect(labels).toContain('1sem')
+  expect(labels).toContain('2sem')
+  expect(labels).toContain('3sem')
+  expect(labels).toContain('4sem')
+  // "—" placeholder is the first option (represents "not yet selected")
+  expect(labels[0]).toBe('—')
+})
+
+// US-010: adding and removing roles updates roleEfforts on save.
+test('US-010: role assignment — remove fullstack, add AI (US-010)', async ({ page }) => {
+  await page.goto('/')
+  // H-001 has data + fullstack roles; select it and enter edit mode
+  await page.locator('.tree-story-row', { hasText: 'H-001' }).click()
+  await page.getByTestId('rp-edit-btn').click()
+
+  // Both assigned role rows are visible
+  await expect(page.getByTestId('rp-role-row-data')).toBeVisible()
+  await expect(page.getByTestId('rp-role-row-fullstack')).toBeVisible()
+
+  // Remove the fullstack role
+  await page.getByTestId('rp-role-remove-fullstack').click()
+  await expect(page.getByTestId('rp-role-row-fullstack')).not.toBeVisible()
+
+  // Add the AI role (was unassigned)
+  await page.getByTestId('rp-role-add-ai').click()
+  await expect(page.getByTestId('rp-role-row-ai')).toBeVisible()
+
+  // Set an effort for AI so it survives the save filter (days=0 rows are dropped)
+  await page.getByTestId('rp-effort-select-ai').selectOption({ label: '1sem' })
+
+  // Save and verify in read mode
+  await page.getByTestId('rp-save-btn').click()
+  await expect(page.locator('.right-panel')).toContainText('DATA')
+  await expect(page.locator('.right-panel')).toContainText('AI')
+  await expect(page.locator('.right-panel')).not.toContainText('FULLSTACK')
+})
+
 // US-007: selecting a different story while editing exits edit mode without saving.
 test('switching stories while editing exits edit mode without saving (US-007)', async ({ page }) => {
   await page.goto('/')

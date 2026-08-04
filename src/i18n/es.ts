@@ -54,6 +54,11 @@ export const es: typeof en = {
   fieldAsA: 'COMO',
   fieldIWant: 'QUIERO',
   fieldSoThat: 'PARA QUE',
+
+  // ── RightPanel — esfuerzo y roles (US-009 / US-010) ───────────────────────
+  sectionRoles: 'ESFUERZO POR ROL',
+  noEffortPlaceholder: '—',
+  addRoleLabel: '+ {name}',
   sectionNarrative: 'NARRATIVA',
   narrativeAs: 'Como',
   narrativeWant: ', quiero',

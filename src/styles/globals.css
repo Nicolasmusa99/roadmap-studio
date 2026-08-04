@@ -596,6 +596,65 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .btn-cancel-edit:hover { border-color: var(--ink-muted); color: var(--ink); }
 
+/* Role rows in edit mode (US-009 / US-010) */
+.rp-role-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.rp-role-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  min-width: 64px;
+}
+.rp-effort-select {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 3px 6px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.rp-effort-select:focus { border-color: var(--oe-green); }
+.rp-role-remove {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--ink-muted);
+  padding: 2px 4px;
+  border-radius: var(--radius);
+  transition: color 0.12s, background 0.12s;
+}
+.rp-role-remove:hover { color: var(--warn); background: var(--warn-weak); }
+.rp-role-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.rp-role-add-btn {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--line);
+  background: var(--panel);
+  color: var(--ink-muted);
+  transition: border-color 0.12s, color 0.12s;
+}
+.rp-role-add-btn:hover { border-color: var(--oe-green); color: var(--oe-green); }
+
 /* ─── Drag & drop ────────────────────────────────────────────────────────────── */
 
 /* Handle — always in flex flow (never absolute/hidden), low-contrast by default */
