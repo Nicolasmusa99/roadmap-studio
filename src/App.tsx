@@ -3,11 +3,14 @@ import { useRoadmapState } from './hooks/useRoadmapState.ts'
 import TopBar from './components/TopBar.tsx'
 import LeftPanel from './components/LeftPanel.tsx'
 import TreeView from './components/TreeView.tsx'
+import TimelineView from './components/TimelineView.tsx'
+import ViewToggle, { type View } from './components/ViewToggle.tsx'
 import RightPanel from './components/RightPanel.tsx'
 
 export default function App() {
   const roadmap = useRoadmapState()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [view, setView] = useState<View>('tree')
 
   const selectedStory = selectedId
     ? (roadmap.state.stories.find(s => s.id === selectedId) ?? null)
@@ -28,14 +31,30 @@ export default function App() {
           onSetPeople={roadmap.setTeamPeople}
           onToggleLayer={roadmap.toggleRiskLayer}
         />
-        <TreeView
-          state={roadmap.state}
-          scheduledStories={roadmap.scheduledStories}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onReorderEpic={roadmap.reorderEpic}
-          onReorderStory={roadmap.reorderStory}
-        />
+        {/* Center column: view toolbar + the active view. selectedId is shared by
+            both views, so switching preserves the selection (US-002 UC-02). */}
+        <div className="center-col">
+          <div className="view-toolbar">
+            <ViewToggle view={view} onChange={setView} />
+          </div>
+          {view === 'tree' ? (
+            <TreeView
+              state={roadmap.state}
+              scheduledStories={roadmap.scheduledStories}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onReorderEpic={roadmap.reorderEpic}
+              onReorderStory={roadmap.reorderStory}
+            />
+          ) : (
+            <TimelineView
+              state={roadmap.state}
+              scheduledStories={roadmap.scheduledStories}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+          )}
+        </div>
         <RightPanel
           story={selectedStory}
           scheduled={selectedScheduled}

@@ -628,3 +628,165 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   margin-bottom: 2px;
   opacity: 0.7;
 }
+
+/* ─── Center column + view toolbar (US-002) ──────────────────────────────────── */
+.center-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.view-toolbar {
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.view-toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  color: var(--ink-muted);
+  background: transparent;
+  transition: background 0.1s, color 0.1s;
+  line-height: 1;
+}
+.view-toggle-btn:hover { background: var(--panel-alt); color: var(--ink); }
+.view-toggle-btn--active { background: var(--oe-green); color: #fff; }
+.view-toggle-btn--active:hover { background: var(--oe-green); color: #fff; }
+
+/* ─── Timeline / Gantt (US-002, US-015, US-016) ──────────────────────────────── */
+.timeline-view {
+  flex: 1;
+  overflow: auto;
+  background: var(--bg);
+  padding: 0 0 40px;
+}
+.timeline-view--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink-muted);
+}
+.tl-empty-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+.tl-grid { min-width: 640px; position: relative; }
+
+/* Rows share a fixed gutter + a flexible track so every bar aligns on one axis */
+.tl-row { display: flex; align-items: stretch; min-height: 26px; }
+.tl-gutter {
+  width: 200px;
+  min-width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.tl-track {
+  position: relative;
+  flex: 1;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.tl-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+  opacity: 0.5;
+}
+
+/* Axis */
+.tl-axis { position: sticky; top: 0; z-index: 3; }
+.tl-gutter--axis {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+}
+.tl-axis .tl-track { background: var(--panel); }
+.tl-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); }
+.tl-tick-lbl {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--ink-muted);
+  padding: 4px 0 0 3px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Epic (STAGE) row */
+.tl-gutter--epic {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--oe-green);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tl-epic-bar {
+  position: absolute;
+  top: 8px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--oe-green-weak);
+  border: 1px solid rgba(30,122,77,0.35);
+}
+
+/* Story row + bar */
+.tl-story-row { cursor: pointer; transition: background 0.1s; }
+.tl-story-row:hover .tl-gutter { background: var(--panel-alt); }
+.tl-story-row--selected .tl-gutter { background: var(--oe-green-weak); }
+.tl-gutter--story { padding-left: 20px; }
+.tl-story-title {
+  font-size: 11px;
+  color: var(--ink);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tl-blocked-chip { color: var(--warn); font-size: 11px; flex-shrink: 0; }
+.tl-story-bar {
+  position: absolute;
+  top: 6px;
+  height: 12px;
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--oe-green);
+  opacity: 0.85;
+}
+.tl-story-bar--selected {
+  opacity: 1;
+  outline: 2px solid var(--oe-green-dim);
+  outline-offset: 1px;
+}

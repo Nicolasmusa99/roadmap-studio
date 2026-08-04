@@ -13,6 +13,13 @@ export const es: typeof en = {
   removeRole: 'Quitar {name}',
   addRole: 'Agregar {name}',
 
+  // ── View toggle / Timeline (US-002) ──────────────────────────────────────
+  viewToggleAria: 'Cambiar vista',
+  viewTree: 'ÁRBOL',
+  viewTimeline: 'TIMELINE',
+  tlWeeks: 'SEMANAS',
+  tlEmpty: 'Sin historias agendadas',
+
   // ── TreeView ─────────────────────────────────────────────────────────────
   nStories: '{n} historias',
   blocked: 'BLOQUEADO',

@@ -12,6 +12,13 @@ export const en = {
   removeRole: 'Remove {name}',
   addRole: 'Add {name}',
 
+  // ── View toggle / Timeline (US-002) ──────────────────────────────────────
+  viewToggleAria: 'Switch view',
+  viewTree: 'TREE',
+  viewTimeline: 'TIMELINE',
+  tlWeeks: 'WEEKS',
+  tlEmpty: 'No scheduled stories',
+
   // ── TreeView ─────────────────────────────────────────────────────────────
   nStories: '{n} stories',
   blocked: 'BLOCKED',
