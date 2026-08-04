@@ -126,13 +126,21 @@ export interface AppConfig {
 
 // ─── Scheduler output ────────────────────────────────────────────────────────
 
+export type BlockedReason =
+  | 'role-unavailable'    // a required role has 0 people
+  | 'dependency-blocked'  // an upstream story is blocked
+  | 'invalid-config'      // daysPerWeek < 1 → conversion undefined (TC-049)
+  | 'cycle'               // story is in (or behind) a dependency cycle (TC-052)
+  | 'not-scheduled'       // fell through the scheduler (should not happen)
+
 export interface ScheduledStory {
   storyId: string
   startDate: string   // YYYY-MM-DD (inclusive)
   endDate: string     // YYYY-MM-DD (last working day, inclusive)
   durationDays: number
   blocked: boolean
-  blockedReason?: string
+  blockedReason?: BlockedReason
+  blockedBy?: string  // root-cause storyId of the block (TC-051); own id when it IS the root
 }
 
 // ─── Full app state ───────────────────────────────────────────────────────────

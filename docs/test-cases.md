@@ -541,3 +541,53 @@
 **Resultado esperado:** Tras cargar pasa a 'estimado'; al vaciarlo a mano queda 'sin estimar', no vuelve al placeholder automático.  
 **Tipo:** Unit
 
+---
+
+> **Auditoría de bordes (TC-049…052).** Casos que ningún TC del brief cubría; agregados por auditoría del motor de cálculo. Cada uno protege un invariante contra un input inválido alcanzable en vivo (config editable, dato importado, localStorage corrupto).
+
+## TC-049 — daysPerWeek < 1 bloquea de forma visible (US-028)
+
+**Descripción:** Verifica que una conversión días→semanas inválida no rompe el scheduler ni se tapa en silencio.  
+**Precondiciones:** Config global con `daysPerWeek = 0` (input alcanzable: la constante es editable por el PM).  
+**Pasos:**
+
+1. Agendar una historia con esfuerzo cargado y `daysPerWeek = 0`.
+
+**Resultado esperado:** La historia queda `blocked` con `blockedReason = 'invalid-config'` y sin fechas (timeline vacío); nunca produce `NaN`/`Infinity`. El error es imposible de no ver; NO se clampea el valor (contradiría "nada asumido, todo visible").  
+**Tipo:** Unit
+
+## TC-050 — mvpPct fuera de 0–100 se clampea (US-017)
+
+**Descripción:** Verifica que un MVP% inválido no viola el invariante #11 (el MVP nunca cuesta más que el Full).  
+**Precondiciones:** Historia con esfuerzo Full y `mvpEnabled = true`.  
+**Pasos:**
+
+1. Fijar `mvpPct = 150` y leer la duración.
+2. Fijar `mvpPct = -10` y leer la duración.
+3. Fijar `mvpPct = 0` y leer la duración.
+
+**Resultado esperado:** Con 150 la duración nunca supera la del Full (se clampea a 100). Con -10 la duración nunca es negativa (se clampea a 0). Con 0 la duración es 0, la historia NO queda bloqueada y `endDate = startDate`. Los bordes 0 y 100 quedan intactos.  
+**Tipo:** Unit
+
+## TC-051 — La historia bloqueada expone la causa raíz (US-011)
+
+**Descripción:** Verifica que un bloqueo propagado por dependencia señala la causa raíz, no solo el eslabón inmediato.  
+**Precondiciones:** Cadena A ← B ← C, donde A requiere un rol con 0 personas.  
+**Pasos:**
+
+1. Agendar A, B y C y leer el bloqueo de cada una.
+
+**Resultado esperado:** Las tres quedan `blocked`. A (raíz) tiene `blockedBy = 'A'` y `blockedReason = 'role-unavailable'`. B y C tienen `blockedBy = 'A'` (heredan la raíz) manteniendo `blockedReason = 'dependency-blocked'`.  
+**Tipo:** Unit
+
+## TC-052 — Un ciclo en los datos se bloquea, no se agenda mal (US-013)
+
+**Descripción:** Verifica que `schedule()` no agenda en silencio historias en ciclo (dato importado / localStorage corrupto), aunque la UI ya prevenga crear ciclos.  
+**Precondiciones:** Tres historias en ciclo A→B→C→A pasadas directo al scheduler.  
+**Pasos:**
+
+1. Agendar las tres y leer su estado.
+
+**Resultado esperado:** Las tres quedan `blocked` con `blockedReason = 'cycle'` y sin fechas; ninguna se ubica en el calendario como si no tuviera dependencias.  
+**Tipo:** Unit
+

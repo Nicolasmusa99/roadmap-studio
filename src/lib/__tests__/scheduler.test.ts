@@ -313,3 +313,76 @@ describe('schedule — MVP multiplier', () => {
     expect(get(result, 's').durationDays).toBe(5)
   })
 })
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Edge-case audit (TC-049..052) — bordes que ningún TC del brief cubre.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── TC-049: daysPerWeek < 1 is invalid PM input ──────────────────────────────
+describe('schedule — TC-049: daysPerWeek=0 (invalid PM input)', () => {
+  it('affected stories are blocked with reason invalid-config (visible, not clamped)', () => {
+    const story = mkStory('s', [['data', 10]])
+    const result = schedule(mkInput([story], [['data', 1]], 0))
+    const s = get(result, 's')
+    expect(s.blocked).toBe(true)
+    expect(s.blockedReason).toBe('invalid-config')
+    expect(s.startDate).toBe('') // timeline emptied → error impossible to miss
+    expect(Number.isNaN(s.durationDays)).toBe(false) // never NaN/Infinity
+  })
+})
+
+// ─── TC-050: mvpPct outside 0..100 ────────────────────────────────────────────
+describe('schedule — TC-050: mvpPct out of range', () => {
+  it('mvpPct=150 must never make the MVP cost more than Full (invariant #11)', () => {
+    const full = schedule(mkInput([mkStory('s', [['data', 10]])], [['data', 1]]))
+    const over = schedule(mkInput([mkStory('s', [['data', 10]], [], true, 150)], [['data', 1]]))
+    expect(get(over, 's').durationDays).toBeLessThanOrEqual(get(full, 's').durationDays)
+  })
+
+  it('mvpPct=-10 must never yield negative duration', () => {
+    const neg = schedule(mkInput([mkStory('s', [['data', 10]], [], true, -10)], [['data', 1]]))
+    expect(get(neg, 's').durationDays).toBeGreaterThanOrEqual(0)
+  })
+
+  it('mvpPct=0 (enabled) → durationDays=0, not blocked, endDate=startDate', () => {
+    const story = mkStory('s', [['data', 10]], [], true, 0)
+    const result = schedule(mkInput([story], [['data', 1]]))
+    const s = get(result, 's')
+    expect(s.blocked).toBe(false)
+    expect(s.durationDays).toBe(0)
+    expect(s.endDate).toBe(s.startDate) // zero effort does not break the end date
+  })
+})
+
+// ─── TC-051: blocked story must expose the root cause ─────────────────────────
+describe('schedule — TC-051: root cause of a blocked chain', () => {
+  it('A(role at 0) ← B ← C: B and C point to A as the root cause', () => {
+    const a = mkStory('A', [['data', 5]])
+    const b = mkStory('B', [['full', 3]], ['A'])
+    const c = mkStory('C', [['full', 2]], ['B'])
+    const result = schedule(mkInput([a, b, c], [['data', 0], ['full', 1]]))
+    expect(get(result, 'A').blocked).toBe(true)
+    expect(get(result, 'B').blocked).toBe(true)
+    expect(get(result, 'C').blocked).toBe(true)
+    // Proposed field: blockedBy = root-cause storyId
+    expect((get(result, 'B') as { blockedBy?: string }).blockedBy).toBe('A')
+    expect((get(result, 'C') as { blockedBy?: string }).blockedBy).toBe('A')
+    // Existing contract preserved (TC-020): reason stays 'dependency-blocked'
+    expect(get(result, 'B').blockedReason).toBe('dependency-blocked')
+  })
+})
+
+// ─── TC-052: cyclic dependencies in the data must not be silently scheduled ───
+describe('schedule — TC-052: cycle in input data', () => {
+  it('A→B→C→A: all three blocked with reason "cycle", none scheduled', () => {
+    const a = mkStory('A', [['data', 5]], ['C'])
+    const b = mkStory('B', [['data', 5]], ['A'])
+    const c = mkStory('C', [['data', 5]], ['B'])
+    const result = schedule(mkInput([a, b, c], [['data', 1]]))
+    expect(get(result, 'A').blocked).toBe(true)
+    expect(get(result, 'B').blocked).toBe(true)
+    expect(get(result, 'C').blocked).toBe(true)
+    expect(get(result, 'A').blockedReason).toBe('cycle')
+    expect(get(result, 'A').startDate).toBe('') // not placed on the calendar
+  })
+})
