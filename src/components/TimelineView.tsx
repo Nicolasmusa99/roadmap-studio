@@ -143,7 +143,7 @@ export default function TimelineView({
                     data-selected={isSelected ? 'true' : 'false'}
                     onClick={() => onSelect(isSelected ? null : story.id)}
                   >
-                    <div className="tl-gutter tl-gutter--story">
+                    <div className="tl-gutter tl-gutter--story" title={story.title}>
                       <span className="story-id">{story.id}</span>
                       <span className="tl-story-title">{story.title}</span>
                       {blocked && <span className="tl-blocked-chip">⊘</span>}

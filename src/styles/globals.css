@@ -962,7 +962,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   text-transform: uppercase;
   opacity: 0.5;
 }
-.tl-grid { min-width: 640px; position: relative; --tl-gutter: 200px; }
+.tl-grid { min-width: 640px; position: relative; --tl-gutter: 260px; }
 
 /* Rows share a fixed gutter + a flexible track so every bar aligns on one axis */
 .tl-row { display: flex; align-items: stretch; min-height: 26px; }
