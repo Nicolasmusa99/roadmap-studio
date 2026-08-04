@@ -524,18 +524,18 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .btn-edit {
   font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: var(--radius);
-  border: 1px solid var(--line);
+  border: 1px solid var(--oe-green);
   background: var(--panel);
-  color: var(--ink-muted);
-  transition: border-color 0.15s, color 0.15s;
+  color: var(--oe-green);
+  transition: background 0.15s, color 0.15s;
 }
-.btn-edit:hover { border-color: var(--oe-green); color: var(--oe-green); }
+.btn-edit:hover { background: var(--oe-green); color: var(--panel); }
 .rp-edit-label {
   display: block;
   font-family: var(--font-mono);
