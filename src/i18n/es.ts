@@ -44,8 +44,16 @@ export const es: typeof en = {
   reorderEpicAria: 'Reordenar STAGE',
   reorderStoryAria: 'Reordenar historia',
 
-  // ── RightPanel ───────────────────────────────────────────────────────────
+  // ── RightPanel — modo lectura ─────────────────────────────────────────────
   selectHint: 'Seleccioná una historia',
+  editStory: 'EDITAR',
+
+  // ── RightPanel — modo edición (US-007) ────────────────────────────────────
+  saveStory: 'GUARDAR',
+  fieldTitle: 'TÍTULO',
+  fieldAsA: 'COMO',
+  fieldIWant: 'QUIERO',
+  fieldSoThat: 'PARA QUE',
   sectionNarrative: 'NARRATIVA',
   narrativeAs: 'Como',
   narrativeWant: ', quiero',

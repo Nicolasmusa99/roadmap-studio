@@ -43,8 +43,16 @@ export const en = {
   reorderEpicAria: 'Reorder STAGE',
   reorderStoryAria: 'Reorder story',
 
-  // ── RightPanel ───────────────────────────────────────────────────────────
+  // ── RightPanel — read mode ────────────────────────────────────────────────
   selectHint: 'Select a story',
+  editStory: 'EDIT',
+
+  // ── RightPanel — edit mode (US-007) ──────────────────────────────────────
+  saveStory: 'SAVE',
+  fieldTitle: 'TITLE',
+  fieldAsA: 'AS A',
+  fieldIWant: 'I WANT',
+  fieldSoThat: 'SO THAT',
   sectionNarrative: 'NARRATIVE',
   narrativeAs: 'As a',
   narrativeWant: ', I want',

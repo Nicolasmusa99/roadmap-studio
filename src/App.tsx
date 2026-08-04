@@ -28,6 +28,9 @@ export default function App() {
   const selectedScheduled = selectedId
     ? (roadmap.scheduledStories.find(s => s.storyId === selectedId) ?? null)
     : null
+  const epicStories = selectedStory
+    ? roadmap.state.stories.filter(s => s.epicId === selectedStory.epicId)
+    : []
   const selectedMilestone = selectedMilestoneId
     ? (roadmap.state.milestones.find(m => m.id === selectedMilestoneId) ?? null)
     : null
@@ -101,6 +104,9 @@ export default function App() {
             scheduled={selectedScheduled}
             daysPerWeek={roadmap.state.config.calendarConfig.daysPerWeek}
             teamRoles={roadmap.state.config.teamRoles}
+            effortScale={roadmap.state.config.effortScale}
+            epicStories={epicStories}
+            onUpdateStory={roadmap.updateStory}
           />
         )}
       </div>

@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
-import type { AppState, ScheduledStory } from '../lib/types'
+import type { AppState, ScheduledStory, Story } from '../lib/types'
 import { createInitialState } from '../data/baseline'
 import { schedule } from '../lib/scheduler'
 import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
+import { clampMvpPct } from '../lib/validation'
 
 export interface RoadmapState {
   state: AppState
@@ -12,6 +13,7 @@ export interface RoadmapState {
   setTeamPeople: (roleId: string, people: number) => void
   toggleRiskLayer: (layerId: string) => void
   toggleMvpStory: (storyId: string) => void
+  updateStory: (storyId: string, patch: Partial<Story>) => void
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   addMilestone: (name: string, target: string, storyIds: string[]) => string
@@ -63,6 +65,27 @@ export function useRoadmapState(): RoadmapState {
         ),
       },
     }))
+  }, [])
+
+  // Merge patch into the story identified by storyId.
+  // mvpPct is clamped defensively (TC-050). estimationState transitions
+  // (applyEstimationAction) are handled here in US-009 when roleEfforts change.
+  const updateStory = useCallback((storyId: string, patch: Partial<Story>) => {
+    setState(s => {
+      const story = s.stories.find(st => st.id === storyId)
+      if (!story) return s
+
+      const mvpPct = patch.mvpPct !== undefined
+        ? clampMvpPct(patch.mvpPct)
+        : story.mvpPct
+
+      return {
+        ...s,
+        stories: s.stories.map(st =>
+          st.id === storyId ? { ...story, ...patch, mvpPct } : st,
+        ),
+      }
+    })
   }, [])
 
   const toggleMvpStory = useCallback((storyId: string) => {
@@ -156,6 +179,7 @@ export function useRoadmapState(): RoadmapState {
     setTeamPeople,
     toggleRiskLayer,
     toggleMvpStory,
+    updateStory,
     reorderEpic,
     reorderStory,
     addMilestone,

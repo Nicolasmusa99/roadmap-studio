@@ -1,4 +1,5 @@
-import type { Story, ScheduledStory, TeamRole } from '../lib/types.ts'
+import { useState, useEffect } from 'react'
+import type { Story, ScheduledStory, TeamRole, EffortScaleStep } from '../lib/types.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
@@ -7,6 +8,9 @@ interface Props {
   scheduled: ScheduledStory | null
   daysPerWeek: number
   teamRoles: TeamRole[]
+  effortScale: EffortScaleStep[]
+  epicStories: Story[]
+  onUpdateStory: (storyId: string, patch: Partial<Story>) => void
 }
 
 const CHIP_CLASS: Record<string, string> = {
@@ -26,8 +30,37 @@ function fmtWeeks(days: number, dpw: number): string {
   return `${days / dpw} sem`
 }
 
-export default function RightPanel({ story, scheduled, daysPerWeek, teamRoles }: Props) {
+// Deep-copy a story so the draft is fully independent from the store.
+function cloneStory(s: Story): Story {
+  return {
+    ...s,
+    roleEfforts: s.roleEfforts.map(re => ({ ...re })),
+    useCases:    [...s.useCases],
+    rules:       [...s.rules],
+    labels:      [...s.labels],
+    dependsOn:   [...s.dependsOn],
+    datasetIds:  [...s.datasetIds],
+  }
+}
+
+export default function RightPanel({
+  story,
+  scheduled,
+  daysPerWeek,
+  teamRoles,
+  effortScale: _effortScale,
+  epicStories: _epicStories,
+  onUpdateStory,
+}: Props) {
   const { t } = useI18n()
+  const [mode, setMode] = useState<'read' | 'edit'>('read')
+  const [draft, setDraft] = useState<Story | null>(null)
+
+  // Exit edit mode without saving whenever the selected story changes.
+  useEffect(() => {
+    setMode('read')
+    setDraft(null)
+  }, [story?.id])
 
   if (!story) {
     return (
@@ -38,29 +71,119 @@ export default function RightPanel({ story, scheduled, daysPerWeek, teamRoles }:
     )
   }
 
+  // ── Handlers ────────────────────────────────────────────────────────────────
+
+  function enterEdit() {
+    setDraft(cloneStory(story!))
+    setMode('edit')
+  }
+
+  function handleSave() {
+    if (!draft) return
+    onUpdateStory(draft.id, draft)
+    setMode('read')
+    setDraft(null)
+  }
+
+  function handleCancel() {
+    setDraft(null)
+    setMode('read')
+  }
+
+  // ── Edit mode ────────────────────────────────────────────────────────────────
+
+  if (mode === 'edit' && draft) {
+    const set = (field: keyof Story) =>
+      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+        setDraft(prev => prev ? { ...prev, [field]: e.target.value } : prev)
+
+    return (
+      <aside className="right-panel">
+        <div className="rp-id">{draft.id}</div>
+        <div className="rp-sep" />
+
+        <label className="rp-edit-label" htmlFor="rp-title">{t('fieldTitle')}</label>
+        <input
+          id="rp-title"
+          className="rp-edit-input"
+          data-testid="rp-field-title"
+          value={draft.title}
+          onChange={set('title')}
+        />
+
+        <label className="rp-edit-label" htmlFor="rp-asA">{t('fieldAsA')}</label>
+        <input
+          id="rp-asA"
+          className="rp-edit-input"
+          data-testid="rp-field-asA"
+          value={draft.asA}
+          onChange={set('asA')}
+        />
+
+        <label className="rp-edit-label" htmlFor="rp-iWant">{t('fieldIWant')}</label>
+        <textarea
+          id="rp-iWant"
+          className="rp-edit-input"
+          data-testid="rp-field-iWant"
+          rows={2}
+          value={draft.iWant}
+          onChange={set('iWant')}
+        />
+
+        <label className="rp-edit-label" htmlFor="rp-soThat">{t('fieldSoThat')}</label>
+        <textarea
+          id="rp-soThat"
+          className="rp-edit-input"
+          data-testid="rp-field-soThat"
+          rows={2}
+          value={draft.soThat}
+          onChange={set('soThat')}
+        />
+
+        <div className="rp-btn-row">
+          <button className="btn-save" data-testid="rp-save-btn" onClick={handleSave}>
+            {t('saveStory')}
+          </button>
+          <button className="btn-cancel-edit" data-testid="rp-cancel-btn" onClick={handleCancel}>
+            {t('cancel')}
+          </button>
+        </div>
+      </aside>
+    )
+  }
+
+  // ── Read mode ────────────────────────────────────────────────────────────────
+
   const roleMap = new Map(teamRoles.map(r => [r.id, r]))
 
   function blockedMsg(): string {
     const r = scheduled?.blockedReason
-    if (r === 'role-unavailable')  return t('blockedRole')
+    if (r === 'role-unavailable')   return t('blockedRole')
     if (r === 'dependency-blocked') return t('blockedDep')
     return t('blockedUnknown')
   }
 
   return (
     <aside className="right-panel">
-      <div className="rp-id">{story.id}</div>
+      <div className="rp-header-row">
+        <div className="rp-id">{story.id}</div>
+        <button className="btn-edit" data-testid="rp-edit-btn" onClick={enterEdit}>
+          {t('editStory')}
+        </button>
+      </div>
       <div className="rp-title">{story.title}</div>
 
       <div className="rp-sep" />
 
       {/* Narrative */}
       <div className="rp-section-label">{t('sectionNarrative')}</div>
-      <div className="rp-narrative">
-        {t('narrativeAs')} <em>{story.asA}</em>{t('narrativeWant')} {story.iWant},
-      </div>
-      <div className="rp-narrative">
-        {t('narrativeSoThat')} {story.soThat}.
+      <div data-testid="rp-narrative">
+        <div className="rp-narrative">
+          {t('narrativeAs')} <em>{story.asA}</em>{t('narrativeWant')} {story.iWant},
+        </div>
+        <div className="rp-narrative">
+          {t('narrativeSoThat')} {story.soThat}.
+        </div>
       </div>
 
       {/* Effort by role */}

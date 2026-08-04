@@ -515,6 +515,87 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   margin: 16px 0;
 }
 
+/* ─── RightPanel edit mode (US-007) ──────────────────────────────────────────── */
+.rp-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.btn-edit {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink-muted);
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-edit:hover { border-color: var(--oe-green); color: var(--oe-green); }
+.rp-edit-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+.rp-edit-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 5px 8px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+  line-height: 1.45;
+}
+.rp-edit-input:focus { border-color: var(--oe-green); }
+.rp-btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.btn-save {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--oe-green);
+  background: var(--oe-green);
+  color: var(--panel);
+  transition: opacity 0.15s;
+}
+.btn-save:hover { opacity: 0.82; }
+.btn-cancel-edit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink-muted);
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-cancel-edit:hover { border-color: var(--ink-muted); color: var(--ink); }
+
 /* ─── Drag & drop ────────────────────────────────────────────────────────────── */
 
 /* Handle — always in flex flow (never absolute/hidden), low-contrast by default */
