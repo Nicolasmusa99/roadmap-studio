@@ -58,6 +58,32 @@ test('TC-007 — close modal via backdrop click', async ({ page }) => {
   await expect(page.getByTestId('story-modal')).not.toBeVisible()
 })
 
+// TC-009: delete story → disappears from tree, right panel deselects
+test('TC-009 — delete story via DELETE button (confirm)', async ({ page }) => {
+  await page.goto('/')
+
+  // Create a story we can safely delete
+  await page.getByTestId('add-story-epic-data').click()
+  const modal = page.getByTestId('story-modal')
+  await modal.getByTestId('story-modal-title').fill('Story To Delete')
+  await modal.getByTestId('story-modal-save').click()
+  await expect(modal).not.toBeVisible()
+
+  // Select the newly created story
+  await page.getByText('Story To Delete').click()
+
+  // DELETE button should be visible (non-protected story)
+  const deleteBtn = page.getByTestId('rp-delete-btn')
+  await expect(deleteBtn).toBeVisible()
+
+  // Accept the confirmation dialog
+  page.on('dialog', dialog => dialog.accept())
+  await deleteBtn.click()
+
+  // Story should no longer appear in the tree
+  await expect(page.getByText('Story To Delete')).not.toBeVisible()
+})
+
 // TC-008: copy story — all fields pre-filled, save creates a new story
 test('TC-008 — copy story via COPY button in RightPanel', async ({ page }) => {
   await page.goto('/')
