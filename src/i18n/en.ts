@@ -19,6 +19,22 @@ export const en = {
   tlWeeks: 'WEEKS',
   tlEmpty: 'No scheduled stories',
 
+  // ── Milestones (US-015 / US-016) ─────────────────────────────────────────
+  msNew: 'CHECKPOINT',
+  msCheckpoint: 'CHECKPOINT',
+  msCreateTitle: 'New checkpoint',
+  msName: 'Name',
+  msTarget: 'TARGET',
+  msStories: 'Stories (any epic)',
+  msCreate: 'Create',
+  cancel: 'Cancel',
+  msComposition: 'COMPOSITION',
+  msForecast: 'FORECAST',
+  msOnTrack: 'ON TRACK',
+  msAtRisk: 'AT RISK',
+  msBlocked: 'BLOCKED',
+  msGap: '+{n} wk',
+
   // ── TreeView ─────────────────────────────────────────────────────────────
   nStories: '{n} stories',
   blocked: 'BLOCKED',

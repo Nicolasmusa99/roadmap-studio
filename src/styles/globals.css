@@ -690,13 +690,13 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   text-transform: uppercase;
   opacity: 0.5;
 }
-.tl-grid { min-width: 640px; position: relative; }
+.tl-grid { min-width: 640px; position: relative; --tl-gutter: 200px; }
 
 /* Rows share a fixed gutter + a flexible track so every bar aligns on one axis */
 .tl-row { display: flex; align-items: stretch; min-height: 26px; }
 .tl-gutter {
-  width: 200px;
-  min-width: 200px;
+  width: var(--tl-gutter, 200px);
+  min-width: var(--tl-gutter, 200px);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -790,3 +790,238 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   outline: 2px solid var(--oe-green-dim);
   outline-offset: 1px;
 }
+
+/* Milestone CHECKPOINT markers — overlay aligned to the track area (US-015/016) */
+.tl-markers {
+  position: absolute;
+  left: var(--tl-gutter, 200px);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.tl-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed var(--ink-muted);
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translateX(-1px);
+}
+.tl-marker-flag {
+  position: absolute;
+  top: 22px;
+  left: 3px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  padding: 2px 5px;
+  border-radius: 2px;
+  background: var(--panel);
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+}
+.tl-marker:hover .tl-marker-flag { border-color: var(--ink-muted); }
+.tl-marker--selected { border-left-color: var(--oe-green); }
+.tl-marker--selected .tl-marker-flag {
+  background: var(--oe-green); color: #fff; border-color: var(--oe-green);
+}
+/* Risk state (US-016) */
+.tl-marker--risk { border-left-color: var(--warn); }
+.tl-marker--risk .tl-marker-flag { color: var(--warn); border-color: var(--warn); }
+.tl-marker--risk.tl-marker--selected .tl-marker-flag {
+  background: var(--warn); color: #fff;
+}
+/* Forecast marker — where the milestone actually lands */
+.tl-forecast {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px solid var(--warn);
+  pointer-events: none;
+  transform: translateX(-1px);
+}
+.tl-forecast-flag {
+  position: absolute;
+  top: 40px;
+  left: 3px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 2px 5px;
+  border-radius: 2px;
+  background: var(--warn-weak);
+  color: var(--warn);
+  border: 1px solid var(--warn);
+}
+
+/* ─── Checkpoint button (toolbar) ─────────────────────────────────────────────── */
+.btn-checkpoint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink-muted);
+  transition: border-color 0.12s, color 0.12s;
+}
+.btn-checkpoint:hover { border-color: var(--oe-green); color: var(--oe-green); }
+
+/* ─── Milestone detail (right panel) ─────────────────────────────────────────── */
+.ms-close {
+  font-size: 12px;
+  color: var(--ink-muted);
+  padding: 0 2px;
+  line-height: 1;
+}
+.ms-close:hover { color: var(--warn); }
+.ms-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  margin-top: 4px;
+}
+.ms-status--ok    { background: var(--oe-green-weak); color: var(--oe-green-dim); }
+.ms-status--risk  { background: var(--warn-weak); color: var(--warn); }
+.ms-status--blocked { background: var(--blocked-weak); color: var(--blocked); }
+.ms-gap { font-weight: 700; }
+.ms-composition { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.ms-comp-group { }
+.ms-comp-epic {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--oe-green);
+  margin-bottom: 3px;
+}
+.ms-comp-story {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0 2px 8px;
+}
+.ms-comp-title { font-size: 11px; color: var(--ink); }
+
+/* ─── Modal ───────────────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 32, 28, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  width: 440px;
+  max-width: 92vw;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+}
+.modal-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--oe-green);
+  margin-bottom: 16px;
+}
+.modal-field { display: block; margin-bottom: 12px; }
+.modal-field-lbl {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 4px;
+}
+.modal-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+}
+.modal-input:focus { outline: none; border-color: var(--oe-green); }
+.modal-story-picker {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.modal-epic-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--oe-green);
+  margin-bottom: 4px;
+}
+.modal-story-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0 3px 6px;
+  cursor: pointer;
+}
+.modal-story-opt input { accent-color: var(--oe-green); }
+.modal-story-title {
+  font-size: 12px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+.modal-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  transition: opacity 0.12s;
+}
+.modal-btn--ghost { border: 1px solid var(--line); color: var(--ink-muted); background: var(--panel); }
+.modal-btn--ghost:hover { color: var(--ink); }
+.modal-btn--primary { background: var(--oe-green); color: #fff; }
+.modal-btn--primary:disabled { opacity: 0.4; cursor: not-allowed; }

@@ -20,6 +20,22 @@ export const es: typeof en = {
   tlWeeks: 'SEMANAS',
   tlEmpty: 'Sin historias agendadas',
 
+  // ── Milestones (US-015 / US-016) ─────────────────────────────────────────
+  msNew: 'CHECKPOINT',
+  msCheckpoint: 'CHECKPOINT',
+  msCreateTitle: 'Nuevo checkpoint',
+  msName: 'Nombre',
+  msTarget: 'TARGET',
+  msStories: 'Historias (cualquier epic)',
+  msCreate: 'Crear',
+  cancel: 'Cancelar',
+  msComposition: 'COMPOSICIÓN',
+  msForecast: 'FORECAST',
+  msOnTrack: 'EN FECHA',
+  msAtRisk: 'EN RIESGO',
+  msBlocked: 'BLOQUEADO',
+  msGap: '+{n} sem',
+
   // ── TreeView ─────────────────────────────────────────────────────────────
   nStories: '{n} historias',
   blocked: 'BLOQUEADO',

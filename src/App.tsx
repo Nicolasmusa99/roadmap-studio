@@ -6,19 +6,38 @@ import TreeView from './components/TreeView.tsx'
 import TimelineView from './components/TimelineView.tsx'
 import ViewToggle, { type View } from './components/ViewToggle.tsx'
 import RightPanel from './components/RightPanel.tsx'
+import MilestoneModal from './components/MilestoneModal.tsx'
+import MilestoneDetail from './components/MilestoneDetail.tsx'
+import { useI18n } from './i18n/I18nContext.tsx'
 
 export default function App() {
   const roadmap = useRoadmapState()
+  const { t } = useI18n()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null)
   const [view, setView] = useState<View>('tree')
+  const [modalOpen, setModalOpen] = useState(false)
+
+  // Story and milestone selection are mutually exclusive: the right panel shows one detail.
+  const selectStory = (id: string | null) => { setSelectedMilestoneId(null); setSelectedId(id) }
+  const selectMilestone = (id: string | null) => { setSelectedId(null); setSelectedMilestoneId(id) }
 
   const selectedStory = selectedId
     ? (roadmap.state.stories.find(s => s.id === selectedId) ?? null)
     : null
-
   const selectedScheduled = selectedId
     ? (roadmap.scheduledStories.find(s => s.storyId === selectedId) ?? null)
     : null
+  const selectedMilestone = selectedMilestoneId
+    ? (roadmap.state.milestones.find(m => m.id === selectedMilestoneId) ?? null)
+    : null
+
+  function handleCreateMilestone(name: string, target: string, storyIds: string[]) {
+    const id = roadmap.addMilestone(name, target, storyIds)
+    setModalOpen(false)
+    setView('timeline')      // show the new checkpoint on the timeline
+    selectMilestone(id)
+  }
 
   return (
     <div className="workspace">
@@ -36,13 +55,20 @@ export default function App() {
         <div className="center-col">
           <div className="view-toolbar">
             <ViewToggle view={view} onChange={setView} />
+            <button
+              className="btn-checkpoint"
+              data-testid="new-milestone"
+              onClick={() => setModalOpen(true)}
+            >
+              ◇ {t('msNew')}
+            </button>
           </div>
           {view === 'tree' ? (
             <TreeView
               state={roadmap.state}
               scheduledStories={roadmap.scheduledStories}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={selectStory}
               onReorderEpic={roadmap.reorderEpic}
               onReorderStory={roadmap.reorderStory}
             />
@@ -51,17 +77,35 @@ export default function App() {
               state={roadmap.state}
               scheduledStories={roadmap.scheduledStories}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={selectStory}
+              selectedMilestoneId={selectedMilestoneId}
+              onSelectMilestone={selectMilestone}
             />
           )}
         </div>
-        <RightPanel
-          story={selectedStory}
-          scheduled={selectedScheduled}
-          daysPerWeek={roadmap.state.config.calendarConfig.daysPerWeek}
-          teamRoles={roadmap.state.config.teamRoles}
-        />
+        {selectedMilestone ? (
+          <MilestoneDetail
+            milestone={selectedMilestone}
+            state={roadmap.state}
+            onClose={() => selectMilestone(null)}
+          />
+        ) : (
+          <RightPanel
+            story={selectedStory}
+            scheduled={selectedScheduled}
+            daysPerWeek={roadmap.state.config.calendarConfig.daysPerWeek}
+            teamRoles={roadmap.state.config.teamRoles}
+          />
+        )}
       </div>
+
+      {modalOpen && (
+        <MilestoneModal
+          state={roadmap.state}
+          onSave={handleCreateMilestone}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

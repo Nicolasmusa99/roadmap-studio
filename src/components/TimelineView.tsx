@@ -9,6 +9,8 @@ interface Props {
   scheduledStories: ScheduledStory[]
   selectedId: string | null
   onSelect: (id: string | null) => void
+  selectedMilestoneId: string | null
+  onSelectMilestone: (id: string | null) => void
 }
 
 const MS_PER_DAY = 86_400_000
@@ -25,7 +27,14 @@ function fmtTick(iso: string): string {
 // Bars fall on the REAL scheduler dates (working-day math already applied upstream).
 // The X axis is plain calendar days: weekends/holidays just compress visually here;
 // marking the skipped days on the axis is SCR-036 (Bloque 2.2), out of scope for 2.1.
-export default function TimelineView({ state, scheduledStories, selectedId, onSelect }: Props) {
+export default function TimelineView({
+  state,
+  scheduledStories,
+  selectedId,
+  onSelect,
+  selectedMilestoneId,
+  onSelectMilestone,
+}: Props) {
   const { t } = useI18n()
 
   const schedMap = useMemo(
@@ -154,6 +163,27 @@ export default function TimelineView({ state, scheduledStories, selectedId, onSe
             </div>
           )
         })}
+
+        {/* Milestones as CHECKPOINT markers over the track area (US-015).
+            Target vs forecast styling is layered on in US-016. */}
+        <div className="tl-markers">
+          {state.milestones.map(ms => {
+            if (!ms.target) return null
+            const isSel = ms.id === selectedMilestoneId
+            return (
+              <div
+                key={ms.id}
+                className={`tl-marker${isSel ? ' tl-marker--selected' : ''}`}
+                style={{ left: `${leftPct(ms.target)}%` }}
+                data-testid={`ms-marker-${ms.id}`}
+                data-ms-id={ms.id}
+                onClick={() => onSelectMilestone(isSel ? null : ms.id)}
+              >
+                <span className="tl-marker-flag">◇ {ms.name}</span>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </main>
   )

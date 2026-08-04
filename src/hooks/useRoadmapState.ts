@@ -12,6 +12,7 @@ export interface RoadmapState {
   toggleMvpStory: (storyId: string) => void
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
+  addMilestone: (name: string, target: string, storyIds: string[]) => string
   reset: () => void
 }
 
@@ -122,6 +123,17 @@ export function useRoadmapState(): RoadmapState {
     [state.stories],
   )
 
+  // Create a transversal milestone (US-015). target is a committed date (YYYY-MM-DD);
+  // forecast is always derived from the schedule, never stored. Returns the new id.
+  const addMilestone = useCallback((name: string, target: string, storyIds: string[]): string => {
+    const id = `ms-user-${Date.now()}`
+    setState(s => ({
+      ...s,
+      milestones: [...s.milestones, { id, name, target, storyIds }],
+    }))
+    return id
+  }, [])
+
   const reset = useCallback(() => {
     setState(createInitialState())
   }, [])
@@ -134,6 +146,7 @@ export function useRoadmapState(): RoadmapState {
     toggleMvpStory,
     reorderEpic,
     reorderStory,
+    addMilestone,
     reset,
   }
 }
