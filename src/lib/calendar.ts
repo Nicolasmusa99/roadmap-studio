@@ -67,6 +67,11 @@ export function getHolidayOnDate(date: Date, holidays: Holiday[]): Holiday | und
 
 // Advance exactly n working days forward from `date` (date itself is not counted).
 // addWorkingDays(Aug24, 0) = Aug24; addWorkingDays(Aug24, 4) = Aug28 (TC-028).
+//
+// Contract: n >= 0 only. This function moves FORWARD; with a negative n the
+// `while (remaining > 0)` loop never runs and it returns `date` unchanged (no
+// backward stepping). Declared, not a bug — the scheduler only ever advances. If
+// backward arithmetic is ever needed, write a separate subWorkingDays().
 export function addWorkingDays(date: Date, n: number, holidays: Holiday[]): Date {
   const result = new Date(date)
   let remaining = n

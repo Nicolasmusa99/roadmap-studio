@@ -6,6 +6,12 @@ import { storyTotalDays } from './aggregation'
 // Average total days of `manual` stories in the epic (excluding `excludeId`).
 // Returns null when there are no manual stories to average from.
 // This value is a PLACEHOLDER — it never drives the roadmap. (product-model §Estimación)
+//
+// Declared decision: Math.round can land OFF the editable effort scale (e.g. 7d,
+// which is not a step). That is intentional and safe here — the suggestion is only
+// a placeholder to keep the epic from looking under-estimated; it is never a
+// loadable/schedulable estimate. Only a `manual` value (chosen from the scale) ever
+// feeds the scheduler, so this number never has to be a valid scale step.
 export function getAutoSuggestion(epicStories: Story[], excludeId?: string): number | null {
   const manual = epicStories.filter(
     s => s.estimationState === 'manual' && s.id !== excludeId,

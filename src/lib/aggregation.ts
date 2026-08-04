@@ -58,6 +58,10 @@ export function epicWindow(
   const active = schedule.filter(s => epicStoryIds.has(s.storyId) && !s.blocked)
   if (active.length === 0) return null
 
+  // Declared dependency: these sorts are plain lexical sorts, correct ONLY because
+  // dates are stored as zero-padded 'YYYY-MM-DD', where lexical order == chronological
+  // order. If the date format ever changes (e.g. 'M/D/YYYY'), this breaks silently —
+  // keep the ISO format or switch to explicit date comparison here.
   const starts = active.map(s => s.startDate).sort()
   const ends = active.map(s => s.endDate).sort()
   return {
