@@ -5,6 +5,15 @@ export const es: typeof en = {
   // ── TopBar ───────────────────────────────────────────────────────────────
   reset: 'REINICIAR',
   resetConfirm: '¿Reiniciar al baseline de fábrica?',
+  legendTitle: 'Notación',
+  legendD: 'd — esfuerzo en días de ese rol (un input, elegido de la escala).',
+  legendP: 'p — personas asignadas a ese rol (más gente = menos duración).',
+  legendSem: 'sem — duración en semanas (la deriva la tool, no se tipea).',
+  legendRoles: 'Chips de rol: Data · Full-stack · AI · Product Designer.',
+  legendMvp: 'MVP — la historia corre con su % de scope MVP reducido propio.',
+  legendAuto: 'AUTO — estimación auto-sugerida del epic (nunca tocada aún).',
+  legendScope: 'SCOPE % — parte del esfuerzo total aún dentro de las amenazas activas.',
+  legendTargetForecast: 'Target = fecha comprometida · Forecast = fin proyectado.',
 
   // ── LeftPanel ────────────────────────────────────────────────────────────
   team: 'EQUIPO',
@@ -12,13 +21,24 @@ export const es: typeof en = {
   roleLoad: 'CARGA POR ROL',
   removeRole: 'Quitar {name}',
   addRole: 'Agregar {name}',
+  scopeReadout: 'SCOPE {pct}% · {inScope}/{total} historias',
 
   // ── View toggle / Timeline (US-002) ──────────────────────────────────────
   viewToggleAria: 'Cambiar vista',
   viewTree: 'ÁRBOL',
   viewTimeline: 'TIMELINE',
+  viewAssumptions: 'SUPUESTOS',
   tlWeeks: 'SEMANAS',
   tlEmpty: 'Sin historias agendadas',
+
+  // ── Assumptions & open questions (invariant #15) ─────────────────────────
+  asmTitle: 'SUPUESTOS Y PREGUNTAS ABIERTAS',
+  asmSubtitle: 'En qué se apoya este roadmap y qué le preguntaríamos al board. Todo acá es editable.',
+  asmAddAssumption: 'Agregar supuesto',
+  asmAddQuestion: 'Agregar pregunta',
+  asmAssumptionPlaceholder: 'Declará un supuesto…',
+  asmQuestionPlaceholder: '¿Qué le preguntarías al board?',
+  asmDelete: 'Eliminar',
 
   // ── Milestones (US-015 / US-016) ─────────────────────────────────────────
   msNew: 'CHECKPOINT',

@@ -32,6 +32,7 @@ const BASE: AppState = {
   ],
   milestones: [{ id: 'ms1', name: 'M1', target: '2026-10-01', storyIds: ['S1', 'S2'] }],
   datasets: [],
+  assumptions: [],
   config: {
     calendarConfig: { startDate: '2026-08-24', daysPerWeek: 5, holidays: [] },
     effortScale: [],

@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback } from 'react'
-import type { AppState, ScheduledStory, Story, NewStoryInput } from '../lib/types'
+import type { AppState, ScheduledStory, Story, NewStoryInput, AssumptionKind } from '../lib/types'
 import { createInitialState } from '../data/baseline'
 import { schedule } from '../lib/scheduler'
+import { storiesInScope } from '../lib/threats'
 import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 import { clampMvpPct } from '../lib/validation'
@@ -24,18 +25,25 @@ export interface RoadmapState {
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   addMilestone: (name: string, target: string, storyIds: string[]) => string
+  addAssumption: (category: string, kind: AssumptionKind) => string
+  updateAssumption: (id: string, text: string) => void
+  deleteAssumption: (id: string) => void
   reset: () => void
 }
 
 export function useRoadmapState(): RoadmapState {
   const [state, setState] = useState<AppState>(createInitialState)
 
+  // Threat scoping happens here, upstream of the scheduler: stories carrying an
+  // inactive threat's label are filtered out entirely, so the schedule (and every
+  // date derived from it) reflects only the work still in scope. Unchecking a
+  // threat therefore removes its stories from Tree/Timeline and recomputes the
+  // epics/milestones that lose that work. (invariant #12, hybrid model)
   const scheduledStories = useMemo(
     () =>
       schedule({
-        stories: state.stories,
+        stories: storiesInScope(state.stories, state.config.riskLayers),
         teamRoles: state.config.teamRoles,
-        riskLayers: state.config.riskLayers,
         calendarConfig: state.config.calendarConfig,
       }),
     [state.stories, state.config.teamRoles, state.config.riskLayers, state.config.calendarConfig],
@@ -238,6 +246,27 @@ export function useRoadmapState(): RoadmapState {
     return id
   }, [])
 
+  // ── Assumptions & open questions (invariant #15) ────────────────────────────
+  const addAssumption = useCallback((category: string, kind: AssumptionKind): string => {
+    const id = `a-user-${Date.now()}`
+    setState(s => ({
+      ...s,
+      assumptions: [...s.assumptions, { id, category, kind, text: '' }],
+    }))
+    return id
+  }, [])
+
+  const updateAssumption = useCallback((id: string, text: string) => {
+    setState(s => ({
+      ...s,
+      assumptions: s.assumptions.map(a => (a.id === id ? { ...a, text } : a)),
+    }))
+  }, [])
+
+  const deleteAssumption = useCallback((id: string) => {
+    setState(s => ({ ...s, assumptions: s.assumptions.filter(a => a.id !== id) }))
+  }, [])
+
   const reset = useCallback(() => {
     setState(createInitialState())
   }, [])
@@ -258,6 +287,9 @@ export function useRoadmapState(): RoadmapState {
     reorderEpic,
     reorderStory,
     addMilestone,
+    addAssumption,
+    updateAssumption,
+    deleteAssumption,
     reset,
   }
 }

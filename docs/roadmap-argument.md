@@ -56,7 +56,9 @@ camino. Lo único que nadie puede saltear es la fundación de datos."*
 
 - **"¿Cambia el equipo?"** Sumar Data adelanta M1/M2 no M3; sumar AI adelanta M3 no M1/M2; sacar
   Data bloquea la fundación entera. Mismo "+1 persona", efecto opuesto según el rol.
-- **"¿Cambia el scope?"** Apagar una amenaza (grueso) o MVP/Full por historia con % editable (fino).
+- **"¿Cambia el scope?"** Apagar una amenaza **saca del roadmap** las historias con ese label
+  (filtra Árbol + Timeline y recalcula epics/forecast); MVP/Full por historia con % editable (fino).
+  El sidebar muestra el `SCOPE %` resultante — el supuesto de scope queda declarado, no oculto.
 - **"¿Scope de un epic?"** Clic → detalle con datasets (Aurora-Heat/FloodGrid/GridWatch), esfuerzo,
   dependencia, milestone.
 - **"¿Qué tan seguro de las fechas?"** "El esfuerzo es input editable, no un hecho; modelo
@@ -65,6 +67,40 @@ camino. Lo único que nadie puede saltear es la fundación de datos."*
 - **"¿No debería decirme el mejor roadmap?"** "No, a propósito. No hay respuesta correcta; el mejor
   depende del objetivo. La tool informa la decisión, no la reemplaza. Saber cuándo NO automatizar
   también es criterio de producto."
+
+## Historias nuevas del baseline (H-012–H-016)
+
+Dos incorporaciones al roadmap, ambas defienden la tesis del case (equipo completo + granularidad
+consistente). Viven en `data/baseline.ts`; acá el *porqué*.
+
+**Product Designer como rol real (no decorativo).** El brief exige 1 Product Designer en el equipo.
+Tres historias de diseño lo ponen en el camino crítico, participando del mismo grafo de dependencias
+y timeline que el resto:
+
+| Historia | Epic | Rol · esfuerzo | Depende de | Por qué |
+|---|---|---|---|---|
+| H-012 Wireframes: Geospatial Visualizer | Geospatial Visualizer | Design 5d | — | El layout se acuerda antes de construir. Gatea las overlays (H-005/H-006 vía H-013). |
+| H-013 Design system: risk overlays | Geospatial Visualizer | Design 3d · Full-stack 2d | H-012 | Lenguaje visual común (color/leyenda/tooltip) para heat/flood/multi-risk. Gatea H-005/H-006. |
+| H-014 Report export prototype | AI Mitigation Plans | Design 3d | H-010 | Se valida el layout del reporte antes de que ingeniería construya el export (H-011). |
+
+**Desglose de AI Mitigation por amenaza.** Antes el epic tenía 2 historias; ahora espeja la
+granularidad de Risk Insights (heat / flood / general):
+
+| Historia | Epic | Rol · esfuerzo | Depende de | Por qué |
+|---|---|---|---|---|
+| H-015 Heat mitigation plan generator | AI Mitigation Plans | AI 5d | H-010, H-007 | Especializa el plan general en acciones de calor (usa el score de calor). |
+| H-016 Flood mitigation plan generator | AI Mitigation Plans | AI 5d | H-010, H-008 | Especializa el plan general en acciones de inundación (usa el score de flood). |
+
+**Decisión de diseño (defendible en la sesión):** los generadores por-amenaza **refinan** el plan
+general (dependen de H-010), no lo alimentan. Así el desglose agrega detalle y consistencia **sin
+mover** el forecast comprometido del MVP (+2 wk), que corre a través de H-010. La alternativa —que
+alimenten el general, espejo exacto de Risk Insights— empujaría el MVP a +4 wk: queda como palanca
+declarada, no como accidente. Con un solo AI Engineer no se pueden tener ambas cosas; el número es
+una elección, no un hecho.
+
+**Coherencia con amenazas:** como H-015/H-016 llevan label `heat`/`flood`, apagar una amenaza saca
+su scoring **y** su plan de mitigación del Árbol y el Timeline — un mismo gesto recorta el trabajo
+consistentemente de punta a punta.
 
 ## Cierre
 

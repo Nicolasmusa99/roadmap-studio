@@ -1,11 +1,13 @@
-import type { Story, TeamRole, RiskLayer, CalendarConfig, ScheduledStory } from './types'
+import type { Story, TeamRole, CalendarConfig, ScheduledStory } from './types'
 import { parseDate, formatDate, addWorkingDays, nextWorkingDay } from './calendar'
 import { isDaysPerWeekValid, clampMvpPct } from './validation'
 
+// NOTE: threat scoping is NOT the scheduler's job. Stories out of scope are
+// filtered upstream (lib/threats.ts) before they ever reach here, so the
+// scheduler only ever sees the work that is actually in scope. See invariant #12.
 export interface SchedulerInput {
   stories: Story[]
   teamRoles: TeamRole[]
-  riskLayers: RiskLayer[]
   calendarConfig: CalendarConfig
 }
 
@@ -64,16 +66,10 @@ function topoSort(stories: Story[]): { order: string[]; cyclic: Set<string> } {
 // Resource-leveled, greedy scheduler (product-model §Scheduler).
 // Processes stories in dependency order; a role can only be in one story at a time.
 export function schedule(input: SchedulerInput): ScheduledStory[] {
-  const { stories, teamRoles, riskLayers, calendarConfig } = input
+  const { stories, teamRoles, calendarConfig } = input
   const { daysPerWeek, holidays, startDate: startDateStr } = calendarConfig
 
   const roleMap = new Map(teamRoles.map(r => [r.id, r]))
-
-  // Scope multiplier: activeLayers / totalLayers (invariant #12).
-  // 0 layers → mult = 1 (no reduction).
-  const totalLayers = riskLayers.length
-  const activeLayers = riskLayers.filter(l => l.active).length
-  const layerMult = totalLayers === 0 ? 1 : activeLayers / totalLayers
 
   // TC-049: daysPerWeek < 1 makes the days→weeks conversion undefined. We do not
   // clamp it (that would hide the bad input); instead every story is blocked below
@@ -152,8 +148,7 @@ export function schedule(input: SchedulerInput): ScheduledStory[] {
     // durationDays = durSemanas * daysPerWeek  (invariant #5, TC-015, TC-016)
     // TC-050: clamp defensively — a stored mvpPct outside 0..100 must never make
     // the MVP cost more than Full (>100) or go negative (<0).
-    const mvpMult = story.mvpEnabled ? clampMvpPct(story.mvpPct) / 100 : 1
-    const mult = layerMult * mvpMult
+    const mult = story.mvpEnabled ? clampMvpPct(story.mvpPct) / 100 : 1
 
     let maxRatio = 0
     for (const re of story.roleEfforts) {

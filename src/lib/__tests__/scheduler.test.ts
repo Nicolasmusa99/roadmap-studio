@@ -37,7 +37,6 @@ const mkInput = (
 ): SchedulerInput => ({
   stories,
   teamRoles: rolePeople.map(([id, people]) => ({ id, name: id, people })),
-  riskLayers: [],
   calendarConfig: {
     startDate: '2026-08-24', // Monday
     daysPerWeek,
@@ -256,7 +255,6 @@ describe('schedule — start date', () => {
     const result = schedule({
       stories: [story],
       teamRoles: [{ id: 'data', name: 'data', people: 1 }],
-      riskLayers: [],
       calendarConfig: { startDate: '2026-08-22', daysPerWeek: 5, holidays: [] }, // Saturday
     })
     expect(get(result, 's').startDate).toBe('2026-08-24') // advances to Monday
@@ -279,24 +277,10 @@ describe('schedule — story with no role efforts', () => {
   })
 })
 
-// ─── Risk layers and MVP mult ─────────────────────────────────────────────────
-
-describe('schedule — scope multiplier (risk layers)', () => {
-  it('with 1 of 2 layers active: mult=0.5 → durationDays halved (rounded to week)', () => {
-    const story = mkStory('s', [['data', 10]])
-    const result = schedule({
-      stories: [story],
-      teamRoles: [{ id: 'data', name: 'data', people: 1 }],
-      riskLayers: [
-        { id: 'r1', name: 'calor', active: true },
-        { id: 'r2', name: 'flood', active: false },
-      ],
-      calendarConfig: { startDate: '2026-08-24', daysPerWeek: 5, holidays: [] },
-    })
-    // mult=0.5; maxRatio = 10*0.5/(5*1) = 1; durationWeeks=1; durationDays=5
-    expect(get(result, 's').durationDays).toBe(5)
-  })
-})
+// ─── MVP mult ──────────────────────────────────────────────────────────────
+// Threat scoping is no longer a scheduler multiplier — stories out of scope are
+// filtered upstream (see threats.test.ts). The scheduler only ever schedules the
+// work it is handed, so its duration math is a pure function of effort/team/MVP.
 
 describe('schedule — MVP multiplier', () => {
   it('mvpEnabled with mvpPct=50 reduces effort to half', () => {

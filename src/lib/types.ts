@@ -159,6 +159,20 @@ export interface NewStoryInput {
   labels: string[]
 }
 
+// ─── Assumptions & open questions ──────────────────────────────────────────────
+
+// "Nada asumido" (invariant #15): the assumptions the roadmap rests on are made
+// explicit and editable in the tool, not left in the PM's head. category groups
+// them; kind separates a declared assumption from a question for the board.
+export type AssumptionKind = 'assumption' | 'question'
+
+export interface Assumption {
+  id: string
+  category: string // e.g. 'Datasets', 'Mitigation', 'Milestones & dates', 'Open questions'
+  kind: AssumptionKind
+  text: string
+}
+
 // ─── Full app state ───────────────────────────────────────────────────────────
 
 export interface AppState {
@@ -167,5 +181,6 @@ export interface AppState {
   stories: Story[]
   milestones: Milestone[]
   datasets: Dataset[]
+  assumptions: Assumption[]
   config: AppConfig
 }

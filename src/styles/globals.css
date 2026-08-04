@@ -27,6 +27,8 @@
   --chip-full-fg:  #1E5C3A;
   --chip-ai-bg:    #EDE8F0;
   --chip-ai-fg:    #5A3A6A;
+  --chip-design-bg: #F0ECE4;
+  --chip-design-fg: #6A4E1E;
   --chip-def-bg:   #EDEDED;
   --chip-def-fg:   #444;
 
@@ -213,6 +215,27 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   cursor: pointer;
 }
 .layer-name--inactive { color: var(--ink-muted); text-decoration: line-through; }
+/* Scope readout — how much effort survives the active threats */
+.scope-readout { margin-top: 10px; }
+.scope-readout-bar {
+  height: 5px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.scope-readout-fill {
+  height: 100%;
+  background: var(--oe-green);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.scope-readout-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
 /* Role load bars */
 .load-row { margin-bottom: 10px; }
 .load-header {
@@ -454,6 +477,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .chip--data     { background: var(--chip-data-bg); color: var(--chip-data-fg); }
 .chip--fullstack { background: var(--chip-full-bg); color: var(--chip-full-fg); }
 .chip--ai       { background: var(--chip-ai-bg);   color: var(--chip-ai-fg);  }
+.chip--design   { background: var(--chip-design-bg); color: var(--chip-design-fg); }
 .chip--default  { background: var(--chip-def-bg);  color: var(--chip-def-fg); }
 .story-duration {
   font-family: var(--font-mono);
@@ -1057,6 +1081,17 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   display: inline-block;
 }
 
+/* Drag handle in epic gutter (SCR-015) */
+.tl-gutter--epic .drag-handle {
+  cursor: grab;
+  margin-right: 6px;
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: opacity 0.12s;
+}
+.tl-gutter--epic:hover .drag-handle { opacity: 1; }
+.tl-gutter--epic .drag-handle:active { cursor: grabbing; }
+
 /* Epic (STAGE) row */
 .tl-gutter--epic {
   font-family: var(--font-mono);
@@ -1379,3 +1414,167 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .modal-btn--ghost:hover { color: var(--ink); }
 .modal-btn--primary { background: var(--oe-green); color: #fff; }
 .modal-btn--primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Assumptions view (invariant #15) ──────────────────────────────────────── */
+.assumptions-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.asm-intro { margin-bottom: 4px; }
+.asm-intro-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.asm-intro-sub {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+  max-width: 640px;
+}
+.asm-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  padding: 14px 16px;
+}
+.asm-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.asm-card-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--oe-green);
+}
+.asm-card-count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 7px;
+  line-height: 16px;
+}
+.asm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.asm-row { display: flex; align-items: flex-start; gap: 8px; }
+.asm-marker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 22px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.asm-marker--assumption { color: var(--oe-green); }
+.asm-marker--question   { color: var(--warn); }
+.asm-input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 6px 8px;
+  resize: vertical;
+}
+.asm-input:focus { outline: none; border-color: var(--oe-green); }
+.asm-del {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.asm-del:hover { color: var(--warn); border-color: var(--warn); }
+.asm-add {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--oe-green);
+  background: transparent;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.asm-add:hover { border-color: var(--oe-green); }
+
+/* ─── Notation legend (help popover in TopBar) ──────────────────────────────── */
+.legend-wrap { position: relative; display: inline-flex; }
+.btn-help {
+  width: 22px; height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+.btn-help:hover, .btn-help[aria-expanded="true"] {
+  color: var(--oe-green);
+  border-color: var(--oe-green);
+}
+.legend-scrim { position: fixed; inset: 0; z-index: 40; }
+.legend-popover {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  z-index: 41;
+  width: 340px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.legend-head {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--oe-green);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.legend-row { display: flex; align-items: flex-start; gap: 10px; }
+.legend-sample {
+  flex-shrink: 0;
+  width: 118px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+.legend-mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink);
+}
+.legend-desc { font-size: 11px; line-height: 1.4; color: var(--ink-muted); }

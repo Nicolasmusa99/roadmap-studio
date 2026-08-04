@@ -48,8 +48,11 @@ Estas reglas son la tesis del producto. Si el código las rompe, está mal aunqu
     mostrar la brecha. El valor está en la brecha entre los dos.
 11. **MVP% editable por historia.** El toggle MVP aplica el % propio de esa historia (no un número
     global). Ej. el MVP de un motor de IA recorta más (45%) que el de un mapa (55%).
-12. **Capas de riesgo = lista editable** (no las 3 del brief clavadas). El multiplicador de scope es
-    lineal y **visible** — es un supuesto declarado, no oculto.
+12. **Capas de riesgo = lista editable** (no las 3 del brief clavadas). Modelo **híbrido**:
+    desactivar una amenaza **filtra** las historias con su label (salen del Árbol y el Timeline,
+    aguas arriba del scheduler; las multi-riesgo sin label de amenaza único nunca se filtran) y el
+    `SCOPE %` resultante queda **visible** — supuesto declarado, no oculto. (Reemplaza el
+    multiplicador lineal `capasActivas/capasTotales` original.)
 13. **Reset = baseline de fábrica inmutable.** Es el único destino del reset. La sesión guardada es
     independiente y nunca sobrescribe el baseline.
 14. **Precedencia de estimación:** `auto-sugerido` (nunca tocado → promedio del epic, marcado) →

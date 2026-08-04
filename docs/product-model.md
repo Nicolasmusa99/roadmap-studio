@@ -24,8 +24,10 @@ tiempo = min(start) … max(end) de sus historias. El **componente** agrega sus 
 
 ## Scheduler (resource-leveled, greedy por dependencia)
 
-Para cada historia: `mult = (capasActivas / capasTotales) * (mvp ? mvpPct/100 : 1)`.
+Para cada historia: `mult = (mvp ? mvpPct/100 : 1)`.
 `durSemanas = ceil( max_por_rol( (esfuerzoDias_rol * mult) / (diasPorSemana * gente_rol) ) )`.
+El scope por amenazas NO entra en `mult`: se aplica **antes** del scheduler filtrando historias
+fuera de scope (ver §Capas de riesgo), así el scheduler solo ve el trabajo en scope.
 
 Agenda: procesar historias en orden de dependencia; una historia arranca en
 `max(fin de su dependencia, primer momento en que sus roles necesarios están libres)`.
@@ -69,8 +71,19 @@ Transversales: agrupan historias de cualquier epic. Cada milestone:
 ## Capas de riesgo (amenazas)
 
 Lista editable (no las 3 del brief clavadas). Activar/desactivar/agregar/editar/eliminar.
-Multiplicador de scope **lineal y visible**: `capasActivas / capasTotales`. Supuesto declarado
-(sobreestima las capas marginales; elegido por legibilidad).
+Modelo **híbrido** (filtro + scope visible):
+
+- **Filtrado (comportamiento principal):** desactivar una amenaza **saca del roadmap** las historias
+  que llevan su label (`heat` / `flood` / `energy`). Salen del Árbol y del Timeline, y los epics y
+  milestones se recalculan porque ese trabajo ya no está. El filtro corre *aguas arriba* del
+  scheduler (`lib/threats.ts`), así toda fecha derivada refleja solo el trabajo en scope. Las
+  historias multi-riesgo (sin un label de amenaza único) nunca se filtran.
+- **Scope visible:** el sidebar muestra `SCOPE %` = esfuerzo aún en scope / esfuerzo total. El
+  supuesto de scope queda **declarado, no oculto**.
+
+Nota: el modelo anterior era un multiplicador lineal `capasActivas / capasTotales` sobre el esfuerzo
+de todas las historias. Se reemplazó por el filtrado porque es más tangible ("¿y si dropeamos
+flood?" saca las historias de flood) y evita encoger trabajo que no es de esa amenaza.
 
 ## Estimación sugerida (precedencia)
 

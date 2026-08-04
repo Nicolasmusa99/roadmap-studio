@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n/I18nContext.tsx'
 
-export type View = 'tree' | 'timeline'
+export type View = 'tree' | 'timeline' | 'assumptions'
 
 interface Props {
   view: View
@@ -29,6 +29,14 @@ export default function ViewToggle({ view, onChange }: Props) {
         aria-pressed={view === 'timeline'}
       >
         ▤ {t('viewTimeline')}
+      </button>
+      <button
+        className={`view-toggle-btn${view === 'assumptions' ? ' view-toggle-btn--active' : ''}`}
+        onClick={() => onChange('assumptions')}
+        data-testid="view-toggle-assumptions"
+        aria-pressed={view === 'assumptions'}
+      >
+        ? {t('viewAssumptions')}
       </button>
     </div>
   )

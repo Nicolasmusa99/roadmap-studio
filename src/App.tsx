@@ -5,6 +5,7 @@ import TopBar from './components/TopBar.tsx'
 import LeftPanel from './components/LeftPanel.tsx'
 import TreeView from './components/TreeView.tsx'
 import TimelineView from './components/TimelineView.tsx'
+import AssumptionsView from './components/AssumptionsView.tsx'
 import ViewToggle, { type View } from './components/ViewToggle.tsx'
 import RightPanel from './components/RightPanel.tsx'
 import MilestoneModal from './components/MilestoneModal.tsx'
@@ -100,15 +101,17 @@ export default function App() {
         <div className="center-col">
           <div className="view-toolbar">
             <ViewToggle view={view} onChange={setView} />
-            <button
-              className="btn-checkpoint"
-              data-testid="new-milestone"
-              onClick={() => setModalOpen(true)}
-            >
-              ◇ {t('msNew')}
-            </button>
+            {view !== 'assumptions' && (
+              <button
+                className="btn-checkpoint"
+                data-testid="new-milestone"
+                onClick={() => setModalOpen(true)}
+              >
+                ◇ {t('msNew')}
+              </button>
+            )}
           </div>
-          {view === 'tree' ? (
+          {view === 'tree' && (
             <TreeView
               state={roadmap.state}
               scheduledStories={roadmap.scheduledStories}
@@ -121,7 +124,8 @@ export default function App() {
               onRenameEpic={roadmap.updateEpicName}
               onDeleteEpic={roadmap.deleteEpic}
             />
-          ) : (
+          )}
+          {view === 'timeline' && (
             <TimelineView
               state={roadmap.state}
               scheduledStories={roadmap.scheduledStories}
@@ -130,6 +134,15 @@ export default function App() {
               selectedMilestoneId={selectedMilestoneId}
               onSelectMilestone={selectMilestone}
               forecasts={roadmap.milestoneForecasts}
+              onReorderEpic={roadmap.reorderEpic}
+            />
+          )}
+          {view === 'assumptions' && (
+            <AssumptionsView
+              assumptions={roadmap.state.assumptions}
+              onAdd={roadmap.addAssumption}
+              onUpdate={roadmap.updateAssumption}
+              onDelete={roadmap.deleteAssumption}
             />
           )}
         </div>

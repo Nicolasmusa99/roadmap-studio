@@ -1,4 +1,4 @@
-import type { AppState, Story, Epic, Component, Milestone, Dataset, AppConfig } from '../lib/types'
+import type { AppState, Story, Epic, Component, Milestone, Dataset, AppConfig, Assumption } from '../lib/types'
 import { DEFAULT_EFFORT_SCALE } from '../lib/types'
 import { getUsHolidays } from '../lib/calendar'
 
@@ -111,7 +111,7 @@ const STORIES: Story[] = [
     rules: ['Color scale follows WHO heat-stress thresholds.'],
     roleEfforts: [{ roleId: 'fullstack', days: 5 }],
     estimationState: 'manual', mvpPct: 50, mvpEnabled: false,
-    dependsOn: ['H-004'], isDraft: false, isProtected: true,
+    dependsOn: ['H-004', 'H-013'], isDraft: false, isProtected: true,
     datasetIds: ['dataset-aurora-heat'], labels: ['map', 'heat'],
   },
 
@@ -127,8 +127,44 @@ const STORIES: Story[] = [
     rules: ['Opacity defaults to 70%; user-adjustable.'],
     roleEfforts: [{ roleId: 'fullstack', days: 5 }],
     estimationState: 'manual', mvpPct: 50, mvpEnabled: false,
-    dependsOn: ['H-004', 'H-002'], isDraft: false, isProtected: true,
+    dependsOn: ['H-004', 'H-002', 'H-013'], isDraft: false, isProtected: true,
     datasetIds: ['dataset-floodgrid'], labels: ['map', 'flood'],
+  },
+
+  {
+    id: 'H-012', epicId: 'epic-viz',
+    title: 'Wireframes: Geospatial Visualizer',
+    asA: 'Product Designer', iWant: 'low-fi wireframes for the map, panels and overlay controls',
+    soThat: 'engineering builds the visualizer against an agreed layout, not guesses',
+    useCases: [
+      'UC-01: Wireframe the map canvas, neighborhood detail panel and layer toggles.',
+      'UC-02: Review with the board; capture sign-off before build starts.',
+    ],
+    rules: [
+      'Assumption: one design review round is enough for MVP; deeper iteration is post-MVP.',
+    ],
+    roleEfforts: [{ roleId: 'design', days: 5 }],
+    estimationState: 'manual', mvpPct: 60, mvpEnabled: false,
+    dependsOn: [], isDraft: false, isProtected: true,
+    datasetIds: [], labels: ['design', 'ui'],
+  },
+
+  {
+    id: 'H-013', epicId: 'epic-viz',
+    title: 'Design system: risk overlays',
+    asA: 'Product Designer', iWant: 'a consistent visual language for the risk overlays (color, legend, tooltip)',
+    soThat: 'heat, flood and multi-risk layers read as one coherent system, not three styles',
+    useCases: [
+      'UC-01: Define the shared color ramp, legend and tooltip components.',
+      'UC-02: Hand off tokens the overlay stories consume directly.',
+    ],
+    rules: [
+      'Color ramps must stay colour-blind safe (declared accessibility constraint).',
+    ],
+    roleEfforts: [{ roleId: 'design', days: 3 }, { roleId: 'fullstack', days: 2 }],
+    estimationState: 'manual', mvpPct: 60, mvpEnabled: false,
+    dependsOn: ['H-012'], isDraft: false, isProtected: true,
+    datasetIds: [], labels: ['design', 'ui'],
   },
 
   // ── epic-risk ──────────────────────────────────────────────────────────────
@@ -188,6 +224,11 @@ const STORIES: Story[] = [
   },
 
   // ── epic-ai ────────────────────────────────────────────────────────────────
+  // Same granularity as Risk Insights (heat / flood / general). H-010 builds the
+  // general resilience plan from the multi-risk index; H-015 and H-016 then refine
+  // it into threat-specific mitigation plans. They depend on H-010, so the MVP
+  // forecast (which runs through H-010) is unchanged — the breakdown adds detail
+  // without moving the committed gap.
 
   {
     id: 'H-010', epicId: 'epic-ai',
@@ -209,6 +250,42 @@ const STORIES: Story[] = [
   },
 
   {
+    id: 'H-015', epicId: 'epic-ai',
+    title: 'Heat mitigation plan generator',
+    asA: 'PM', iWant: 'AI-generated heat-specific mitigation actions per high-heat neighborhood',
+    soThat: 'planners get targeted cooling interventions (shade, reflective roofs, cooling centers)',
+    useCases: [
+      'UC-01: Specialize the general resilience plan into heat-driven actions per neighborhood.',
+      'UC-02: Actions map to the heat score band so severity drives the recommendation.',
+    ],
+    rules: [
+      'Refines the general plan using the heat-risk score as the primary signal.',
+    ],
+    roleEfforts: [{ roleId: 'ai', days: 5 }],
+    estimationState: 'manual', mvpPct: 45, mvpEnabled: false,
+    dependsOn: ['H-010', 'H-007'], isDraft: false, isProtected: true,
+    datasetIds: ['dataset-aurora-heat'], labels: ['ai', 'planning', 'heat'],
+  },
+
+  {
+    id: 'H-016', epicId: 'epic-ai',
+    title: 'Flood mitigation plan generator',
+    asA: 'PM', iWant: 'AI-generated flood-specific mitigation actions per high-flood neighborhood',
+    soThat: 'planners get targeted interventions (drainage, barriers, zoning limits)',
+    useCases: [
+      'UC-01: Specialize the general resilience plan into flood-driven actions per neighborhood.',
+      'UC-02: Actions reference the 100-year flood baseline so scope is explicit.',
+    ],
+    rules: [
+      'Refines the general plan using the flood-risk score as the primary signal.',
+    ],
+    roleEfforts: [{ roleId: 'ai', days: 5 }],
+    estimationState: 'manual', mvpPct: 45, mvpEnabled: false,
+    dependsOn: ['H-010', 'H-008'], isDraft: false, isProtected: true,
+    datasetIds: ['dataset-floodgrid'], labels: ['ai', 'planning', 'flood'],
+  },
+
+  {
     id: 'H-011', epicId: 'epic-ai',
     title: 'Plan export and sharing',
     asA: 'PM', iWant: 'to export resilience plans as PDF and share a read-only link',
@@ -220,8 +297,26 @@ const STORIES: Story[] = [
     rules: ['Export is a snapshot; live data is not embedded in the PDF.'],
     roleEfforts: [{ roleId: 'fullstack', days: 10 }],
     estimationState: 'manual', mvpPct: 60, mvpEnabled: false,
-    dependsOn: ['H-010'], isDraft: false, isProtected: true,
+    dependsOn: ['H-014', 'H-015', 'H-016'], isDraft: false, isProtected: true,
     datasetIds: [], labels: ['export', 'sharing'],
+  },
+
+  {
+    id: 'H-014', epicId: 'epic-ai',
+    title: 'Report export prototype',
+    asA: 'Product Designer', iWant: 'a clickable prototype of the resilience-plan export and share flow',
+    soThat: 'we validate the report layout with stakeholders before engineering builds it',
+    useCases: [
+      'UC-01: Prototype the PDF layout and the read-only share screen.',
+      'UC-02: Test the flow with two council stakeholders; fold in feedback.',
+    ],
+    rules: [
+      'Assumption: export covers a single plan view for MVP (no multi-plan bundles).',
+    ],
+    roleEfforts: [{ roleId: 'design', days: 3 }],
+    estimationState: 'manual', mvpPct: 60, mvpEnabled: false,
+    dependsOn: ['H-010'], isDraft: false, isProtected: true,
+    datasetIds: [], labels: ['design', 'export'],
   },
 ]
 
@@ -258,6 +353,39 @@ const MILESTONES: Milestone[] = [
   },
 ]
 
+// ─── Assumptions & open questions (invariant #15: "nada asumido") ─────────────
+// Everything the roadmap silently rests on, made explicit and editable in-tool.
+// The PM can add/edit/remove any of these live in the ASSUMPTIONS tab.
+
+const ASSUMPTIONS: Assumption[] = [
+  // Datasets
+  { id: 'a-ds-1', category: 'Datasets', kind: 'assumption',
+    text: 'Aurora-Heat, FloodGrid and GridWatch are third-party APIs already negotiated and licensed by the council.' },
+  { id: 'a-ds-2', category: 'Datasets', kind: 'assumption',
+    text: 'Dataset access credentials are available in the deployment environment from day one (no procurement lead time budgeted).' },
+  { id: 'a-ds-3', category: 'Datasets', kind: 'assumption',
+    text: 'GridWatch municipality IDs map 1:1 to our neighborhood area codes; no reconciliation layer is scoped.' },
+  // Mitigation actions
+  { id: 'a-mit-1', category: 'Mitigation', kind: 'assumption',
+    text: 'Resilience plans are advisory (LLM-generated recommendations), not automated interventions — no actuation/IoT scope.' },
+  { id: 'a-mit-2', category: 'Mitigation', kind: 'assumption',
+    text: 'An LLM API with sufficient quota is available; prompt engineering is in scope, model fine-tuning is not.' },
+  // Milestones & dates
+  { id: 'a-ms-1', category: 'Milestones & dates', kind: 'assumption',
+    text: 'The MVP target (2026-10-30) is a committed board date; the +2 wk forecast gap is the decision we are surfacing, not hiding.' },
+  { id: 'a-ms-2', category: 'Milestones & dates', kind: 'assumption',
+    text: 'The team is stable for the whole plan: 1 Data, 2 Full-stack, 1 AI, 1 Product Designer, working US federal-holiday calendar.' },
+  // Open questions for the board
+  { id: 'a-q-1', category: 'Open questions', kind: 'question',
+    text: 'Does the council already have live access to all three datasets, or do any still need to be negotiated?' },
+  { id: 'a-q-2', category: 'Open questions', kind: 'question',
+    text: 'Is the MVP scope the four checkpoint stories, or must heat + flood both ship before we call it an MVP?' },
+  { id: 'a-q-3', category: 'Open questions', kind: 'question',
+    text: 'Who signs off on the resilience-plan recommendations before they reach city planners — is a human-in-the-loop review required?' },
+  { id: 'a-q-4', category: 'Open questions', kind: 'question',
+    text: 'If the MVP date is immovable, which threat would the board drop first to pull the forecast in — flood, energy, or heat?' },
+]
+
 // ─── App config ───────────────────────────────────────────────────────────────
 
 const CONFIG: AppConfig = {
@@ -277,6 +405,7 @@ const CONFIG: AppConfig = {
     { id: 'data',      name: 'Data Engineer',       people: 1 },
     { id: 'fullstack', name: 'Full-stack Developer', people: 2 },
     { id: 'ai',        name: 'AI Engineer',          people: 1 },
+    { id: 'design',    name: 'Product Designer',     people: 1 },
   ],
 }
 
@@ -284,12 +413,13 @@ const CONFIG: AppConfig = {
 
 // Immutable factory snapshot (invariant #13: reset always returns here).
 export const BASELINE: AppState = {
-  components: COMPONENTS,
-  epics:      EPICS,
-  stories:    STORIES,
-  milestones: MILESTONES,
-  datasets:   DATASETS,
-  config:     CONFIG,
+  components:  COMPONENTS,
+  epics:       EPICS,
+  stories:     STORIES,
+  milestones:  MILESTONES,
+  datasets:    DATASETS,
+  assumptions: ASSUMPTIONS,
+  config:      CONFIG,
 }
 
 // Deep copy for initializing React state — mutations never touch BASELINE.

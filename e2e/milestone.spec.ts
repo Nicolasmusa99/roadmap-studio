@@ -9,7 +9,7 @@ test('create a milestone spanning two epics; marker + composition appear', async
 
   await page.getByTestId('ms-name').fill('Alpha')
 
-  // Pick stories from two different epics: H-001 (Data Foundation) + H-004 (Risk Map Viewer)
+  // Pick stories from two different epics: H-001 (Data Foundation) + H-004 (Geospatial Visualizer)
   const picker = page.getByTestId('ms-stories')
   await picker.locator('.modal-story-opt', { hasText: 'H-001' }).click()
   await picker.locator('.modal-story-opt', { hasText: 'H-004' }).click()
@@ -24,7 +24,7 @@ test('create a milestone spanning two epics; marker + composition appear', async
   await expect(comp).toContainText('H-001')
   await expect(comp).toContainText('H-004')
   await expect(comp).toContainText('Data Foundation')
-  await expect(comp).toContainText('Risk Map Viewer')
+  await expect(comp).toContainText('Geospatial Visualizer')
 })
 
 // US-016 — the baseline MVP milestone has an intentionally aggressive target, so

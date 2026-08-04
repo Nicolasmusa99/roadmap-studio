@@ -4,6 +4,15 @@ export const en = {
   // ── TopBar ───────────────────────────────────────────────────────────────
   reset: 'RESET',
   resetConfirm: 'Reset to factory baseline?',
+  legendTitle: 'Notation',
+  legendD: 'd — effort in days for that role (an input, chosen from the scale).',
+  legendP: 'p — people assigned to that role (more people = shorter duration).',
+  legendSem: 'sem — duration in weeks (derived by the tool, not typed).',
+  legendRoles: 'Role chips: Data · Full-stack · AI · Product Designer.',
+  legendMvp: 'MVP — the story is running at its own reduced MVP scope %.',
+  legendAuto: 'AUTO — estimate auto-suggested from the epic (never edited yet).',
+  legendScope: 'SCOPE % — share of total effort still inside the active threats.',
+  legendTargetForecast: 'Target = committed date · Forecast = projected end.',
 
   // ── LeftPanel ────────────────────────────────────────────────────────────
   team: 'TEAM',
@@ -11,13 +20,24 @@ export const en = {
   roleLoad: 'ROLE LOAD',
   removeRole: 'Remove {name}',
   addRole: 'Add {name}',
+  scopeReadout: 'SCOPE {pct}% · {inScope}/{total} stories',
 
   // ── View toggle / Timeline (US-002) ──────────────────────────────────────
   viewToggleAria: 'Switch view',
   viewTree: 'TREE',
   viewTimeline: 'TIMELINE',
+  viewAssumptions: 'ASSUMPTIONS',
   tlWeeks: 'WEEKS',
   tlEmpty: 'No scheduled stories',
+
+  // ── Assumptions & open questions (invariant #15) ─────────────────────────
+  asmTitle: 'ASSUMPTIONS & OPEN QUESTIONS',
+  asmSubtitle: 'What this roadmap rests on, and what we’d ask the board. Everything here is editable.',
+  asmAddAssumption: 'Add assumption',
+  asmAddQuestion: 'Add question',
+  asmAssumptionPlaceholder: 'State an assumption…',
+  asmQuestionPlaceholder: 'What would you ask the board?',
+  asmDelete: 'Delete',
 
   // ── Milestones (US-015 / US-016) ─────────────────────────────────────────
   msNew: 'CHECKPOINT',

@@ -353,12 +353,13 @@
 - `UC-01` El PM ve las capas por default (calor, inundación, energía) y puede activarlas/desactivarlas.
 - `UC-02` 'Agregar capa' crea una amenaza nueva (ej. sequía); entra al cálculo de scope al instante.
 - `UC-03` El PM edita o elimina una capa existente.
-- `UC-04` Apagar o quitar una capa reduce el esfuerzo de las historias que la cubren y acelera el timeline, con nota de lo no cubierto.
+- `UC-04` Apagar o quitar una capa **saca del roadmap** las historias con su label: salen del Árbol y del Timeline, y los epics/milestones se recalculan porque ese trabajo ya no está. Reactivarla las restaura.
 
 **Reglas**
 
 - Las capas de riesgo son una lista editable, no las tres del brief clavadas.
-- El multiplicador de scope es lineal y visible (cada capa pesa igual) — supuesto declarado, no oculto.
+- Modelo híbrido: desactivar una amenaza **filtra** sus historias (por label) aguas arriba del scheduler; las multi-riesgo (sin un label de amenaza único) nunca se filtran.
+- El scope resultante se muestra como `SCOPE %` (esfuerzo en scope / esfuerzo total) — supuesto declarado, no oculto.
 
 **Estados**
 

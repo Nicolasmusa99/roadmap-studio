@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useRef } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types.ts'
 import type { ReorderResult } from '../lib/reorder.ts'
 import { epicEffortDays, epicWindow, componentEffortDays } from '../lib/aggregation.ts'
+import { storiesInScope } from '../lib/threats.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 import Toast from './Toast.tsx'
@@ -30,6 +31,7 @@ const CHIP_CLASS: Record<string, string> = {
   data:      'chip chip--data',
   fullstack: 'chip chip--fullstack',
   ai:        'chip chip--ai',
+  design:    'chip chip--design',
 }
 
 function fmtShortDate(iso: string): string {
@@ -89,6 +91,13 @@ export default function TreeView({
   const [addingEpic, setAddingEpic] = useState<{ compId: string; value: string } | null>(null)
 
   const dpw = state.config.calendarConfig.daysPerWeek
+
+  // Only stories in scope for the active threats are shown/aggregated here — an
+  // unchecked threat drops its stories from the tree and shrinks its epic. (#12)
+  const scopedStories = useMemo(
+    () => storiesInScope(state.stories, state.config.riskLayers),
+    [state.stories, state.config.riskLayers],
+  )
 
   const epicIndexMap = useMemo(() => {
     const map = new Map<string, number>()
@@ -196,8 +205,8 @@ export default function TreeView({
 
       {state.components.map(comp => {
         const compEpics = state.epics.filter(e => e.componentId === comp.id)
-        const compStories = state.stories.filter(s => compEpics.some(e => e.id === s.epicId))
-        const compEffort = componentEffortDays(comp.id, state.epics, state.stories)
+        const compStories = scopedStories.filter(s => compEpics.some(e => e.id === s.epicId))
+        const compEffort = componentEffortDays(comp.id, state.epics, scopedStories)
         const isExpanded = expanded.has(comp.id)
         const compColor = COMP_COLORS[comp.id] ?? '#6B7A72'
 
@@ -219,9 +228,9 @@ export default function TreeView({
               <div className="tree-comp-body">
                 {compEpics.map(epic => {
                   const stageNum = epicIndexMap.get(epic.id) ?? 1
-                  const epicStories = state.stories.filter(s => s.epicId === epic.id)
-                  const effort = epicEffortDays(epic.id, state.stories)
-                  const win = epicWindow(epic.id, state.stories, scheduledStories)
+                  const epicStories = scopedStories.filter(s => s.epicId === epic.id)
+                  const effort = epicEffortDays(epic.id, scopedStories)
+                  const win = epicWindow(epic.id, scopedStories, scheduledStories)
                   const isEpicExpanded = expanded.has(epic.id)
                   const hasBlocked = epicStories.some(s => schedMap.get(s.id)?.blocked)
                   const isDragging = draggingId === epic.id

@@ -19,6 +19,7 @@ const CHIP_CLASS: Record<string, string> = {
   data:      'rp-chip-lg chip--data',
   fullstack: 'rp-chip-lg chip--fullstack',
   ai:        'rp-chip-lg chip--ai',
+  design:    'rp-chip-lg chip--design',
 }
 
 function fmtDate(iso: string): string {

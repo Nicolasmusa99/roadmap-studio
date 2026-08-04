@@ -1,9 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types.ts'
 import type { MilestoneForecast } from '../lib/milestones.ts'
+import type { ReorderResult } from '../lib/reorder.ts'
 import { epicWindow } from '../lib/aggregation.ts'
+import { storiesInScope } from '../lib/threats.ts'
 import { parseDate, formatDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
+import Toast from './Toast.tsx'
 
 interface Props {
   state: AppState
@@ -13,6 +16,7 @@ interface Props {
   selectedMilestoneId: string | null
   onSelectMilestone: (id: string | null) => void
   forecasts: Map<string, MilestoneForecast>
+  onReorderEpic: (movingId: string, newIndex: number) => ReorderResult
 }
 
 const MS_PER_DAY = 86_400_000
@@ -37,12 +41,65 @@ export default function TimelineView({
   selectedMilestoneId,
   onSelectMilestone,
   forecasts,
+  onReorderEpic,
 }: Props) {
   const { t } = useI18n()
+
+  // ── Drag state (epic-only, same ref+RAF pattern as TreeView) ──────────────
+  const dragRef = useRef<{ id: string } | null>(null)
+  const [draggingId,  setDraggingId]  = useState<string | null>(null)
+  const [dropTarget,  setDropTarget]  = useState<{ id: string; pos: 'before' | 'after' } | null>(null)
+  const [toast,       setToast]       = useState<string | null>(null)
+  const dismissToast = useCallback(() => setToast(null), [])
+
+  function startDrag(e: React.DragEvent, epicId: string) {
+    e.stopPropagation()
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', `epic:${epicId}`) // required by Firefox
+    dragRef.current = { id: epicId }
+    requestAnimationFrame(() => setDraggingId(epicId))
+  }
+  function endDrag() {
+    dragRef.current = null
+    setDraggingId(null)
+    setDropTarget(null)
+  }
+  function dropPos(e: React.DragEvent): 'before' | 'after' {
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    return e.clientY < r.top + r.height / 2 ? 'before' : 'after'
+  }
+  function onEpicDragOver(e: React.DragEvent, epicId: string) {
+    if (!dragRef.current || dragRef.current.id === epicId) return
+    e.preventDefault()
+    setDropTarget({ id: epicId, pos: dropPos(e) })
+  }
+  function onEpicDrop(e: React.DragEvent, targetEpicId: string) {
+    e.preventDefault()
+    const item = dragRef.current
+    if (!item || item.id === targetEpicId) { endDrag(); return }
+    const dt = dropTarget?.id === targetEpicId ? dropTarget.pos : 'before'
+    const targetIdx = state.epics.findIndex(ep => ep.id === targetEpicId)
+    const newIndex  = dt === 'before' ? targetIdx : targetIdx + 1
+    const result = onReorderEpic(item.id, newIndex)
+    if (!result.ok && result.errorKey)
+      setToast(t(result.errorKey as Parameters<typeof t>[0], result.errorParams))
+    endDrag()
+  }
+  function onDragLeave(e: React.DragEvent) {
+    if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node))
+      setDropTarget(null)
+  }
 
   const schedMap = useMemo(
     () => new Map(scheduledStories.map(s => [s.storyId, s])),
     [scheduledStories],
+  )
+
+  // Stories in scope for the active threats — an unchecked threat removes its
+  // rows from the timeline and shrinks the epic bar accordingly. (#12)
+  const scopedStories = useMemo(
+    () => storiesInScope(state.stories, state.config.riskLayers),
+    [state.stories, state.config.riskLayers],
   )
 
   const epicIndex = useMemo(() => {
@@ -93,6 +150,7 @@ export default function TimelineView({
 
   return (
     <main className="timeline-view" data-testid="timeline-view">
+      {toast && <Toast message={toast} onClose={dismissToast} />}
       {/* Legend — explains every visual element in one glance */}
       <div className="tl-legend" aria-label="Timeline legend">
         <span className="tl-legend-item">
@@ -129,13 +187,35 @@ export default function TimelineView({
         {/* Epics as STAGES, each with its stories as bars */}
         {state.epics.map(epic => {
           const stageNum = String(epicIndex.get(epic.id) ?? 1).padStart(2, '0')
-          const epicStories = state.stories.filter(s => s.epicId === epic.id)
-          const win = epicWindow(epic.id, state.stories, scheduledStories)
+          const epicStories = scopedStories.filter(s => s.epicId === epic.id)
+          const win = epicWindow(epic.id, scopedStories, scheduledStories)
+
+          const isDragging   = draggingId === epic.id
+          const isDropTarget = dropTarget?.id === epic.id
 
           return (
-            <div key={epic.id} className="tl-epic-block">
+            <div
+              key={epic.id}
+              className={[
+                'tl-epic-block',
+                isDragging                                          ? 'is-dragging'      : '',
+                isDropTarget && dropTarget?.pos === 'before'        ? 'drop-ind-before'  : '',
+                isDropTarget && dropTarget?.pos === 'after'         ? 'drop-ind-after'   : '',
+              ].filter(Boolean).join(' ')}
+              onDragOver={e => onEpicDragOver(e, epic.id)}
+              onDrop={e => onEpicDrop(e, epic.id)}
+              onDragLeave={onDragLeave}
+            >
               <div className="tl-row tl-epic-row">
                 <div className="tl-gutter tl-gutter--epic">
+                  <span
+                    className="drag-handle"
+                    draggable
+                    onDragStart={e => startDrag(e, epic.id)}
+                    onDragEnd={endDrag}
+                    title={t('dragEpicTip')}
+                    aria-label={t('reorderEpicAria')}
+                  >⠿</span>
                   STAGE {stageNum} — {epic.name.toUpperCase()}
                 </div>
                 <div className="tl-track">

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { TeamRole, RiskLayer, Story } from '../lib/types.ts'
 import { effortByRole } from '../lib/aggregation.ts'
+import { storiesInScope, scopeSummary } from '../lib/threats.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
 interface Props {
@@ -14,7 +15,11 @@ interface Props {
 export default function LeftPanel({ teamRoles, riskLayers, stories, onSetPeople, onToggleLayer }: Props) {
   const { t } = useI18n()
 
-  const totalByRole = useMemo(() => effortByRole(stories), [stories])
+  // Role Load reflects only work in scope: dropping a threat shrinks its role bars.
+  const scopedStories = useMemo(() => storiesInScope(stories, riskLayers), [stories, riskLayers])
+  const scope = useMemo(() => scopeSummary(stories, riskLayers), [stories, riskLayers])
+
+  const totalByRole = useMemo(() => effortByRole(scopedStories), [scopedStories])
 
   const loads = useMemo(() => {
     return teamRoles.map(r => {
@@ -84,6 +89,19 @@ export default function LeftPanel({ teamRoles, riskLayers, stories, onSetPeople,
             </span>
           </label>
         ))}
+        {/* Scope readout — the assumption stays declared, never hidden (#12). */}
+        <div className="scope-readout" data-testid="scope-readout">
+          <div className="scope-readout-bar">
+            <div className="scope-readout-fill" style={{ width: `${scope.pct}%` }} />
+          </div>
+          <div className="scope-readout-label">
+            {t('scopeReadout', {
+              pct: String(scope.pct),
+              inScope: String(scope.storiesInScope),
+              total: String(scope.storiesTotal),
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Role load bars */}
