@@ -175,9 +175,13 @@ export default function TimelineView({
             const isSel = ms.id === selectedMilestoneId
             const fc = forecasts.get(ms.id)
             const atRisk = fc?.status === 'at-risk' || fc?.status === 'blocked'
+            const targetTooltip = `TARGET · ${ms.name}: ${fmtTick(ms.target)} (committed date)`
+            const forecastTooltip = fc?.forecast
+              ? `FORECAST · ${ms.name}: ${fmtTick(fc.forecast)} (projected end, +${fc.gapWeeks} wk delay)`
+              : ''
             return (
               <div key={ms.id}>
-                {/* Target marker (fixed, committed) */}
+                {/* Target marker — always grey/dashed: committed date */}
                 <div
                   className={[
                     'tl-marker',
@@ -185,17 +189,25 @@ export default function TimelineView({
                     isSel ? 'tl-marker--selected' : '',
                   ].filter(Boolean).join(' ')}
                   style={{ left: `${leftPct(ms.target)}%` }}
+                  title={targetTooltip}
                   data-testid={`ms-marker-${ms.id}`}
                   data-ms-id={ms.id}
                   data-status={fc?.status ?? 'on-track'}
                   onClick={() => onSelectMilestone(isSel ? null : ms.id)}
                 >
-                  <span className="tl-marker-flag">◇ {ms.name}</span>
+                  <span className="tl-marker-flag">
+                    <span className="tl-marker-kind">TARGET</span> ◇ {ms.name}
+                  </span>
                 </div>
-                {/* Forecast marker (calculated) — only when it slips past target */}
-                {fc?.status === 'at-risk' && fc.forecast && (
-                  <div className="tl-forecast" style={{ left: `${leftPct(fc.forecast)}%` }}>
+                {/* Forecast marker — always amber/solid: where it actually lands */}
+                {atRisk && fc?.forecast && (
+                  <div
+                    className="tl-forecast"
+                    style={{ left: `${leftPct(fc.forecast)}%` }}
+                    title={forecastTooltip}
+                  >
                     <span className="tl-forecast-flag" data-testid={`ms-gap-${ms.id}`}>
+                      <span className="tl-marker-kind tl-marker-kind--forecast">FORECAST</span>{' '}
                       {ms.name} {t('msGap', { n: String(fc.gapWeeks) })}
                     </span>
                   </div>
