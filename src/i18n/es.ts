@@ -83,6 +83,12 @@ export const es: typeof en = {
   blockedDep: '⊘ BLOQUEADO — dependencia bloqueada',
   blockedUnknown: '⊘ SIN PROGRAMAR',
 
+  // ── Epic CRUD (US-003, US-004) ───────────────────────────────────────────
+  addEpic: 'AGREGAR STAGE',
+  newEpicPlaceholder: 'Nombre del stage…',
+  epicDeleteConfirm: '¿Eliminar este stage y todas sus historias? Esta acción no se puede deshacer.',
+  epicRenameSave: 'Renombrar',
+
   // ── Story CRUD (US-005, US-008) ───────────────────────────────────────────
   newStory: 'NUEVA HISTORIA',
   copyStory: 'COPIAR',

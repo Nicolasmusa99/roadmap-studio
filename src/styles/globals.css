@@ -302,6 +302,9 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   background: var(--panel);
 }
 .tree-epic-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 500;
@@ -310,6 +313,68 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   color: var(--oe-green);
   padding: 8px 20px 0;
   opacity: 0.75;
+}
+.tree-epic-eyebrow-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.tree-epic-eyebrow:hover .tree-epic-eyebrow-actions { opacity: 1; }
+.tree-epic-action-btn {
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: var(--ink-muted);
+  transition: color 0.12s, background 0.12s;
+}
+.tree-epic-action-btn:hover { color: var(--oe-green); background: color-mix(in srgb, var(--oe-green) 10%, transparent); }
+.tree-epic-action-btn--danger:hover { color: var(--warn); background: var(--warn-weak); }
+.tree-epic-rename-input {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--oe-green);
+  border-radius: 2px;
+  padding: 1px 4px;
+  background: var(--panel);
+  color: var(--oe-green);
+  width: 140px;
+}
+.tree-add-epic-btn {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 4px 20px;
+  padding: 5px 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--oe-green);
+  background: transparent;
+  border: 1px dashed var(--oe-green);
+  border-radius: var(--radius);
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.tree-add-epic-btn:hover { opacity: 1; }
+.tree-add-epic-form {
+  padding: 4px 20px;
+}
+.tree-add-epic-input {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--oe-green);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  background: var(--panel);
+  color: var(--ink);
+  width: 100%;
 }
 .tree-epic-header {
   display: flex;

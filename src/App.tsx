@@ -117,6 +117,9 @@ export default function App() {
               onReorderEpic={roadmap.reorderEpic}
               onReorderStory={roadmap.reorderStory}
               onAddStory={handleAddStory}
+              onAddEpic={roadmap.addEpic}
+              onRenameEpic={roadmap.updateEpicName}
+              onDeleteEpic={roadmap.deleteEpic}
             />
           ) : (
             <TimelineView

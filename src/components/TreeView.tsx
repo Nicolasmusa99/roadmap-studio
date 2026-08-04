@@ -13,6 +13,9 @@ interface Props {
   onReorderEpic: (movingId: string, newIndex: number) => ReorderResult
   onReorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   onAddStory: (epicId: string) => void
+  onAddEpic: (componentId: string, name: string) => void
+  onRenameEpic: (epicId: string, name: string) => void
+  onDeleteEpic: (epicId: string) => void
 }
 
 const COMP_COLORS: Record<string, string> = {
@@ -75,6 +78,9 @@ export default function TreeView({
   onReorderEpic,
   onReorderStory,
   onAddStory,
+  onAddEpic,
+  onRenameEpic,
+  onDeleteEpic,
 }: Props) {
   const allIds = useMemo(
     () => [...state.components.map(c => c.id), ...state.epics.map(e => e.id)],
@@ -91,6 +97,10 @@ export default function TreeView({
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const dismissToast = useCallback(() => setToast(null), [])
+  // epicId → current inline rename value (null = not editing)
+  const [renamingEpic, setRenamingEpic] = useState<{ id: string; value: string } | null>(null)
+  // componentId → new epic name being typed (null = form hidden)
+  const [addingEpic, setAddingEpic] = useState<{ compId: string; value: string } | null>(null)
 
   const dpw = state.config.calendarConfig.daysPerWeek
 
@@ -244,10 +254,8 @@ export default function TreeView({
                       onDrop={e => onEpicDrop(e, epic.id)}
                       onDragLeave={onDragLeave}
                     >
-                      {/* Eyebrow — drag handle lives here */}
+                      {/* Eyebrow — drag handle, rename, delete */}
                       <div className="tree-epic-eyebrow">
-                        {/* The handle span is draggable; the eyebrow div itself is NOT,
-                            so clicking elsewhere in the row works normally */}
                         <span
                           className="drag-handle"
                           draggable
@@ -258,10 +266,59 @@ export default function TreeView({
                         >
                           ⠿
                         </span>
-                        STAGE {String(stageNum).padStart(2, '0')} — {epic.name.toUpperCase()}
+
+                        {renamingEpic?.id === epic.id ? (
+                          <input
+                            className="tree-epic-rename-input"
+                            data-testid={`epic-rename-input-${epic.id}`}
+                            value={renamingEpic.value}
+                            autoFocus
+                            onChange={e => setRenamingEpic({ id: epic.id, value: e.target.value })}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && renamingEpic.value.trim()) {
+                                onRenameEpic(epic.id, renamingEpic.value)
+                                setRenamingEpic(null)
+                              } else if (e.key === 'Escape') {
+                                setRenamingEpic(null)
+                              }
+                            }}
+                            onBlur={() => {
+                              if (renamingEpic.value.trim()) onRenameEpic(epic.id, renamingEpic.value)
+                              setRenamingEpic(null)
+                            }}
+                          />
+                        ) : (
+                          <span>STAGE {String(stageNum).padStart(2, '0')} — {epic.name.toUpperCase()}</span>
+                        )}
+
                         {hasBlocked && (
                           <span style={{ color: 'var(--warn)', marginLeft: 8 }}>⊘ {t('blocked')}</span>
                         )}
+
+                        <span className="tree-epic-eyebrow-actions">
+                          <button
+                            className="tree-epic-action-btn"
+                            data-testid={`epic-rename-btn-${epic.id}`}
+                            title="Rename stage"
+                            onClick={() => setRenamingEpic({ id: epic.id, value: epic.name })}
+                          >
+                            ✎
+                          </button>
+                          {!epic.isProtected && (
+                            <button
+                              className="tree-epic-action-btn tree-epic-action-btn--danger"
+                              data-testid={`epic-delete-btn-${epic.id}`}
+                              title="Delete stage"
+                              onClick={() => {
+                                if (window.confirm(t('epicDeleteConfirm'))) {
+                                  onDeleteEpic(epic.id)
+                                }
+                              }}
+                            >
+                              ×
+                            </button>
+                          )}
+                        </span>
                       </div>
 
                       <button
@@ -368,6 +425,40 @@ export default function TreeView({
                     </div>
                   )
                 })}
+
+                {/* Add epic inline form (US-003) */}
+                {addingEpic?.compId === comp.id ? (
+                  <div className="tree-add-epic-form">
+                    <input
+                      className="tree-add-epic-input"
+                      data-testid={`add-epic-input-${comp.id}`}
+                      placeholder={t('newEpicPlaceholder')}
+                      value={addingEpic.value}
+                      autoFocus
+                      onChange={e => setAddingEpic({ compId: comp.id, value: e.target.value })}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && addingEpic.value.trim()) {
+                          onAddEpic(comp.id, addingEpic.value)
+                          setAddingEpic(null)
+                        } else if (e.key === 'Escape') {
+                          setAddingEpic(null)
+                        }
+                      }}
+                      onBlur={() => {
+                        if (addingEpic.value.trim()) onAddEpic(comp.id, addingEpic.value)
+                        setAddingEpic(null)
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    className="tree-add-epic-btn"
+                    data-testid={`add-epic-${comp.id}`}
+                    onClick={() => setAddingEpic({ compId: comp.id, value: '' })}
+                  >
+                    + {t('addEpic')}
+                  </button>
+                )}
               </div>
             )}
           </div>

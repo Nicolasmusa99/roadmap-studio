@@ -82,6 +82,12 @@ export const en = {
   blockedDep: '⊘ BLOCKED — dependency blocked',
   blockedUnknown: '⊘ NOT SCHEDULED',
 
+  // ── Epic CRUD (US-003, US-004) ───────────────────────────────────────────
+  addEpic: 'ADD STAGE',
+  newEpicPlaceholder: 'Stage name…',
+  epicDeleteConfirm: 'Delete this stage and all its stories? This cannot be undone.',
+  epicRenameSave: 'Rename',
+
   // ── Story CRUD (US-005, US-008) ───────────────────────────────────────────
   newStory: 'NEW STORY',
   copyStory: 'COPY',

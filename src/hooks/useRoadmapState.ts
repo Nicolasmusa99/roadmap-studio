@@ -6,7 +6,7 @@ import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 import { clampMvpPct } from '../lib/validation'
 import { applyEstimationAction } from '../lib/estimation'
-import { removeStoryFromState } from '../lib/mutations'
+import { removeStoryFromState, removeEpicFromState } from '../lib/mutations'
 
 export interface RoadmapState {
   state: AppState
@@ -18,6 +18,9 @@ export interface RoadmapState {
   updateStory: (storyId: string, patch: Partial<Story>) => void
   addStory: (epicId: string, fields: NewStoryInput) => string
   deleteStory: (storyId: string) => void
+  addEpic: (componentId: string, name: string) => string
+  updateEpicName: (epicId: string, name: string) => void
+  deleteEpic: (epicId: string) => void
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   addMilestone: (name: string, target: string, storyIds: string[]) => string
@@ -144,6 +147,26 @@ export function useRoadmapState(): RoadmapState {
     }))
   }, [])
 
+  const addEpic = useCallback((componentId: string, name: string): string => {
+    const id = `epic-user-${Date.now()}`
+    setState(s => ({
+      ...s,
+      epics: [...s.epics, { id, componentId, name: name.trim(), isProtected: false }],
+    }))
+    return id
+  }, [])
+
+  const updateEpicName = useCallback((epicId: string, name: string) => {
+    setState(s => ({
+      ...s,
+      epics: s.epics.map(e => e.id === epicId ? { ...e, name: name.trim() } : e),
+    }))
+  }, [])
+
+  const deleteEpic = useCallback((epicId: string) => {
+    setState(s => removeEpicFromState(s, epicId))
+  }, [])
+
   // Reorder epics globally — validates cross-epic deps (TC-024) before mutating state.
   // When the epic order changes we re-sort the stories array so the scheduler sees the right priority.
   const reorderEpic = useCallback(
@@ -229,6 +252,9 @@ export function useRoadmapState(): RoadmapState {
     updateStory,
     addStory,
     deleteStory,
+    addEpic,
+    updateEpicName,
+    deleteEpic,
     reorderEpic,
     reorderStory,
     addMilestone,
