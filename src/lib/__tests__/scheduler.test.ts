@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { schedule } from '../scheduler'
-import type { Story, SchedulerInput } from '../types'
+import type { SchedulerInput } from '../scheduler'
+import type { Story } from '../types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
