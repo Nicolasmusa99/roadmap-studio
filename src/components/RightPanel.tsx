@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import type { Story, ScheduledStory, TeamRole, EffortScaleStep } from '../lib/types.ts'
+import type { Story, ScheduledStory, TeamRole, EffortScaleStep, RiskLayer } from '../lib/types.ts'
 import { parseDate } from '../lib/calendar.ts'
+import { storyDegradation } from '../lib/threats.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   teamRoles: TeamRole[]
   effortScale: EffortScaleStep[]
   epicStories: Story[]
+  riskLayers: RiskLayer[]
   onUpdateStory: (storyId: string, patch: Partial<Story>) => void
   onCopyStory?: () => void
   onDeleteStory?: (storyId: string) => void
@@ -53,6 +55,7 @@ export default function RightPanel({
   teamRoles,
   effortScale,
   epicStories: _epicStories,
+  riskLayers,
   onUpdateStory,
   onCopyStory,
   onDeleteStory,
@@ -365,6 +368,26 @@ export default function RightPanel({
       ) : (
         <span style={{ color: 'var(--ink-muted)', fontSize: 12 }}>{t('notScheduled')}</span>
       )}
+
+      {/* Degradation (heat↔energy cross): shown only when an amplifying threat is off */}
+      {(() => {
+        const degr = storyDegradation(story, riskLayers)
+        if (!degr.degraded) return null
+        return (
+          <>
+            <div className="rp-section-label">{t('sectionDegraded')}</div>
+            <div
+              className="story-badge story-badge--degraded"
+              style={{ display: 'inline-block', padding: '4px 8px', fontSize: 11, marginBottom: 6 }}
+            >
+              ⚠ {t('degradedBadge')} · −{degr.lostDimensions.map(d => d.toUpperCase()).join('/')}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--ink-muted)', lineHeight: 1.4 }}>
+              {t('degradedTip', { dims: degr.lostDimensions.join(', ') })}
+            </div>
+          </>
+        )
+      })()}
 
       {/* MVP */}
       <div className="rp-sep" />

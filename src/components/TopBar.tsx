@@ -63,6 +63,7 @@ export default function TopBar({ datasets, onReset }: Props) {
               />
               <LegendRow sample={<span className="story-badge story-badge--mvp">MVP</span>} desc={t('legendMvp')} />
               <LegendRow sample={<span className="story-badge story-badge--auto">AUTO</span>} desc={t('legendAuto')} />
+              <LegendRow sample={<span className="story-badge story-badge--degraded">⚠ −HEAT</span>} desc={t('legendDegraded')} />
               <LegendRow sample={<span className="legend-mono">SCOPE 67%</span>} desc={t('legendScope')} />
               <LegendRow sample={<span className="legend-mono">TARGET / FORECAST</span>} desc={t('legendTargetForecast')} />
             </div>

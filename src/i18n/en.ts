@@ -13,6 +13,7 @@ export const en = {
   legendAuto: 'AUTO — estimate auto-suggested from the epic (never edited yet).',
   legendScope: 'SCOPE % — share of total effort still inside the active threats.',
   legendTargetForecast: 'Target = committed date · Forecast = projected end.',
+  legendDegraded: 'DEGRADED — the story runs without an amplifying dimension (e.g. energy burden without heat). Not blocked, just reduced.',
 
   // ── LeftPanel ────────────────────────────────────────────────────────────
   team: 'TEAM',
@@ -58,6 +59,9 @@ export const en = {
   // ── TreeView ─────────────────────────────────────────────────────────────
   nStories: '{n} stories',
   blocked: 'BLOCKED',
+  degradedBadge: 'DEGRADED',
+  degradedTip: 'Degraded — the {dims} dimension is off (its threat layer is unchecked). The score keeps its own component; not blocked, just less precise.',
+  sectionDegraded: 'DEGRADATION',
   dragEpicTip: 'Drag to reorder STAGE',
   dragStoryTip: 'Drag to reorder',
   reorderEpicAria: 'Reorder STAGE',

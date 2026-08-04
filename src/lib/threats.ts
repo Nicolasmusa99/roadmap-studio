@@ -28,6 +28,28 @@ export function storiesInScope(stories: Story[], riskLayers: RiskLayer[]): Story
   return stories.filter(s => isStoryInScope(s, riskLayers))
 }
 
+// ─── Graceful degradation (heat↔energy cross) ────────────────────────────────
+//
+// A story can declare threats that AMPLIFY it (story.amplifiedBy) — an enrichment,
+// not a gate. When such a threat is inactive the story is NOT filtered out (that is
+// what a label would do); it stays scheduled and only loses that dimension. The UI
+// renders this as a "degraded" score, never as BLOCKED. This is what lets the energy
+// burden score survive with reduced precision when heat is unchecked, instead of
+// vanishing the way a heat-labelled story would.
+
+export interface Degradation {
+  degraded: boolean
+  lostDimensions: string[] // amplifying threat names that are currently inactive
+}
+
+export function storyDegradation(story: Story, riskLayers: RiskLayer[]): Degradation {
+  const inactive = new Set(
+    riskLayers.filter(l => !l.active).map(l => l.name.toLowerCase()),
+  )
+  const lostDimensions = (story.amplifiedBy ?? []).filter(a => inactive.has(a.toLowerCase()))
+  return { degraded: lostDimensions.length > 0, lostDimensions }
+}
+
 // ─── Scope readout ──────────────────────────────────────────────────────────────
 
 export interface ScopeSummary {

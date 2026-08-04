@@ -29,8 +29,8 @@ const STORIES: Story[] = [
   {
     id: 'H-001', epicId: 'epic-data',
     title: 'Ingest Aurora-Heat dataset',
-    asA: 'PM', iWant: 'ingest hourly heat-risk grid from Aurora-Heat',
-    soThat: 'the platform has a live 1km heat layer to score against',
+    asA: 'Data Engineer', iWant: 'to ingest the hourly heat-risk grid from Aurora-Heat',
+    soThat: 'the platform always has a live 1 km heat layer to score neighborhoods against',
     useCases: [
       'UC-01: Pipeline fetches hourly updates from the Aurora-Heat API.',
       'UC-02: Data is normalized to the canonical schema and time-stamped.',
@@ -48,8 +48,8 @@ const STORIES: Story[] = [
   {
     id: 'H-002', epicId: 'epic-data',
     title: 'Ingest FloodGrid dataset',
-    asA: 'PM', iWant: 'ingest daily flood-risk tiles from FloodGrid',
-    soThat: 'the platform has 250m inundation-probability tiles per neighborhood',
+    asA: 'Data Engineer', iWant: 'to ingest the daily flood-risk tiles from FloodGrid',
+    soThat: 'the platform has fresh 250 m inundation-probability tiles for every neighborhood',
     useCases: [
       'UC-01: Daily batch import via FloodGrid FTP endpoint.',
       'UC-02: Tiles are clipped to the configured coverage polygon.',
@@ -66,8 +66,8 @@ const STORIES: Story[] = [
   {
     id: 'H-003', epicId: 'epic-data',
     title: 'Ingest GridWatch energy dataset',
-    asA: 'PM', iWant: 'stream 15-min energy-grid readings from GridWatch',
-    soThat: 'the platform can cross-reference heat stress with grid load',
+    asA: 'Data Engineer', iWant: 'to stream the 15-min energy-grid readings from GridWatch',
+    soThat: 'the platform can relate consumption and grid load to the other risk layers',
     useCases: [
       'UC-01: Stream from GridWatch MQTT broker into the time-series store.',
       'UC-02: Gaps longer than 30 min are flagged and visible in the admin panel.',
@@ -86,8 +86,8 @@ const STORIES: Story[] = [
   {
     id: 'H-004', epicId: 'epic-viz',
     title: 'Base risk map layer',
-    asA: 'PM', iWant: 'a zoomable map with neighborhood boundaries',
-    soThat: 'all risk overlays have a consistent spatial canvas',
+    asA: 'Urban Planner', iWant: 'a zoomable map of Lumeria with neighborhood boundaries',
+    soThat: 'I can locate and compare risk across specific zones of the city',
     useCases: [
       'UC-01: Render a web map centered on the configured metro area.',
       'UC-02: Neighborhood polygons are clickable; clicking opens the risk summary panel.',
@@ -102,8 +102,8 @@ const STORIES: Story[] = [
   {
     id: 'H-005', epicId: 'epic-viz',
     title: 'Heat risk overlay',
-    asA: 'PM', iWant: 'a toggleable heat-risk choropleth on the map',
-    soThat: 'the board can see which neighborhoods face the highest heat exposure',
+    asA: 'Urban Planner', iWant: 'a toggleable heat-risk choropleth on the map',
+    soThat: 'I can see at a glance which neighborhoods face the most dangerous heat exposure',
     useCases: [
       'UC-01: Color-coded cells from the Aurora-Heat layer at neighborhood granularity.',
       'UC-02: Tooltip shows heat-index value and risk tier on hover.',
@@ -118,8 +118,8 @@ const STORIES: Story[] = [
   {
     id: 'H-006', epicId: 'epic-viz',
     title: 'Flood risk overlay',
-    asA: 'PM', iWant: 'a toggleable flood-risk overlay on the map',
-    soThat: 'planners can see inundation probability per neighborhood',
+    asA: 'Urban Planner', iWant: 'a toggleable flood-risk overlay on the map',
+    soThat: 'I can see which neighborhoods face the highest inundation probability before approving new development',
     useCases: [
       'UC-01: 250m FloodGrid tiles rendered as a semi-transparent layer.',
       'UC-02: Layer toggled independently of the heat overlay.',
@@ -167,13 +167,32 @@ const STORIES: Story[] = [
     datasetIds: [], labels: ['design', 'ui'],
   },
 
+  {
+    id: 'H-017', epicId: 'epic-viz',
+    title: 'Energy stress overlay',
+    asA: 'Urban Planner', iWant: 'a toggleable overlay that shades the map by grid load and consumption intensity per neighborhood',
+    soThat: 'I can see where the energy system is most strained, not just where the weather is worst',
+    useCases: [
+      'UC-01: Color the map from the GridWatch load-ratio per neighborhood — a cost/consumption view, not a physical-hazard view like heat or flood.',
+      'UC-02: Toggled independently of the heat and flood overlays; reuses the H-013 shared visual language.',
+    ],
+    rules: [
+      'Energy is modeled as a COST / CONSUMPTION problem (grid load, demand), not a physical-hazard layer.',
+      'Sequencing decision (declared, not a data need): energy is post-MVP scope, so this work is sequenced after the MVP checkpoint (H-010). Keeps the committed MVP forecast intact — the dependency is visible here, not hidden.',
+    ],
+    roleEfforts: [{ roleId: 'fullstack', days: 5 }],
+    estimationState: 'manual', mvpPct: 50, mvpEnabled: false,
+    dependsOn: ['H-010', 'H-004', 'H-003', 'H-013'], isDraft: false, isProtected: true,
+    datasetIds: ['dataset-gridwatch'], labels: ['map', 'energy'],
+  },
+
   // ── epic-risk ──────────────────────────────────────────────────────────────
 
   {
     id: 'H-007', epicId: 'epic-risk',
     title: 'Heat risk scoring per neighborhood',
-    asA: 'PM', iWant: 'a computed heat-risk score for each neighborhood',
-    soThat: 'AI Plans can prioritize interventions by heat severity',
+    asA: 'Council Risk Analyst', iWant: 'a computed heat-risk score for each neighborhood',
+    soThat: 'I can rank neighborhoods by heat severity and defend where we intervene first',
     useCases: [
       'UC-01: Score = weighted average of Aurora-Heat cells within the polygon.',
       'UC-02: Score refreshed daily; previous day retained for trend display.',
@@ -190,8 +209,8 @@ const STORIES: Story[] = [
   {
     id: 'H-008', epicId: 'epic-risk',
     title: 'Flood risk scoring per neighborhood',
-    asA: 'PM', iWant: 'a computed flood-risk score for each neighborhood',
-    soThat: 'AI Plans can factor flood exposure into resilience recommendations',
+    asA: 'Council Risk Analyst', iWant: 'a computed flood-risk score for each neighborhood',
+    soThat: 'I can rank neighborhoods by flood exposure and justify how it weighs into resilience decisions',
     useCases: [
       'UC-01: Score = max inundation probability across the neighborhood polygon.',
       'UC-02: Scores versioned daily.',
@@ -206,21 +225,48 @@ const STORIES: Story[] = [
   {
     id: 'H-009', epicId: 'epic-risk',
     title: 'Multi-risk aggregation index',
-    asA: 'PM', iWant: 'a composite risk index fusing heat, flood and energy stress',
-    soThat: 'decision-makers see one number per neighborhood, not three',
+    asA: 'member of the decision board', iWant: 'a single composite risk index per neighborhood that reflects how the threats compound, not just their sum',
+    soThat: 'we can prioritize neighborhoods from one honest figure instead of juggling three separate scores',
     useCases: [
-      'UC-01: Composite = linear combination of the three sub-scores.',
-      'UC-02: Weights are configurable in the admin panel.',
+      'UC-01: Composite fuses the heat, flood and energy sub-scores with a compound-crisis term that boosts neighborhoods scoring high on more than one threat at once (e.g. high heat AND high energy burden).',
+      'UC-02: Weights and the compound term are configurable in the admin panel.',
+      'UC-03: When a threat layer is off, the index keeps running on the remaining dimensions and flags itself as degraded (it lost an input), rather than silently collapsing to a partial number.',
     ],
     rules: [
       'Assumption: equal initial weights (⅓ each) — declared supuesto, visible in UI.',
       'Energy sub-score = GridWatch load-ratio vs. rolling 30-day peak.',
+      'Interaction is NON-linear: heat and energy burden reinforce each other (a heatwave spikes A/C demand, so a hot low-capacity neighborhood is a compounded crisis — worse than the two scores added). Capturing that is the whole reason an index beats three separate scores.',
     ],
     roleEfforts: [{ roleId: 'data', days: 3 }, { roleId: 'ai', days: 10 }],
     estimationState: 'manual', mvpPct: 40, mvpEnabled: false,
     dependsOn: ['H-007', 'H-008'], isDraft: false, isProtected: true,
     datasetIds: ['dataset-aurora-heat', 'dataset-floodgrid', 'dataset-gridwatch'],
     labels: ['scoring', 'aggregation'],
+    // Never filtered (no single-threat label), but each threat feeds a dimension:
+    // toggling one off degrades the index (loses that input) instead of blocking it.
+    amplifiedBy: ['heat', 'flood', 'energy'],
+  },
+
+  {
+    id: 'H-018', epicId: 'epic-risk',
+    title: 'Energy burden score per neighborhood',
+    asA: 'Council Risk Analyst', iWant: 'a per-neighborhood energy-burden score that combines how much energy a neighborhood consumes with how able its residents are to pay for it',
+    soThat: 'I can rank neighborhoods by energy vulnerability, so a low-income high-consumption area surfaces above a wealthy one that simply uses a lot',
+    useCases: [
+      'UC-01: Own component = consumption (GridWatch load) × inverse ability-to-pay — a low-income, high-consumption neighborhood scores highest.',
+      'UC-02: Heat-amplification component = heatwaves spike A/C demand, driving up both grid stress and cost for those same households.',
+      'UC-03: With the heat layer OFF, the score stays live on its own component and drops ONLY the heat-amplification dimension — rendered as a degraded / reduced-precision score, never blocked or removed.',
+    ],
+    rules: [
+      'Energy is a COST / CONSUMPTION problem, not a physical hazard: burden = consumption × (1 / ability-to-pay).',
+      'Degradation, NOT blocking: this story carries no heat label, so toggling heat off never filters it — it keeps its own component and loses only the heat-amplification dimension (see amplifiedBy: heat).',
+      'Sequencing decision (declared): energy is post-MVP scope; this starts after the MVP checkpoint (H-010) so the committed MVP forecast does not move.',
+    ],
+    roleEfforts: [{ roleId: 'data', days: 5 }, { roleId: 'ai', days: 5 }],
+    estimationState: 'manual', mvpPct: 45, mvpEnabled: false,
+    dependsOn: ['H-010', 'H-003'], isDraft: false, isProtected: true,
+    datasetIds: ['dataset-gridwatch'], labels: ['scoring', 'energy'],
+    amplifiedBy: ['heat'],
   },
 
   // ── epic-ai ────────────────────────────────────────────────────────────────
@@ -233,8 +279,8 @@ const STORIES: Story[] = [
   {
     id: 'H-010', epicId: 'epic-ai',
     title: 'Resilience plan generator',
-    asA: 'PM', iWant: 'AI-generated resilience action plans for high-risk neighborhoods',
-    soThat: 'city planners receive prioritized, data-backed recommendations',
+    asA: 'Urban Planner', iWant: 'AI-generated resilience action plans for high-risk neighborhoods',
+    soThat: 'I get prioritized, data-backed interventions I can take straight to the council',
     useCases: [
       'UC-01: For each neighborhood above risk threshold, generate a top-3 action list.',
       'UC-02: Each action includes estimated impact, cost tier and lead time.',
@@ -252,8 +298,8 @@ const STORIES: Story[] = [
   {
     id: 'H-015', epicId: 'epic-ai',
     title: 'Heat mitigation plan generator',
-    asA: 'PM', iWant: 'AI-generated heat-specific mitigation actions per high-heat neighborhood',
-    soThat: 'planners get targeted cooling interventions (shade, reflective roofs, cooling centers)',
+    asA: 'Emergency Coordinator', iWant: 'AI-generated heat-specific mitigation actions per high-heat neighborhood',
+    soThat: 'I can stand up targeted cooling responses (shade, reflective roofs, cooling centers) where heat hits hardest',
     useCases: [
       'UC-01: Specialize the general resilience plan into heat-driven actions per neighborhood.',
       'UC-02: Actions map to the heat score band so severity drives the recommendation.',
@@ -270,8 +316,8 @@ const STORIES: Story[] = [
   {
     id: 'H-016', epicId: 'epic-ai',
     title: 'Flood mitigation plan generator',
-    asA: 'PM', iWant: 'AI-generated flood-specific mitigation actions per high-flood neighborhood',
-    soThat: 'planners get targeted interventions (drainage, barriers, zoning limits)',
+    asA: 'Urban Planner', iWant: 'AI-generated flood-specific mitigation actions per high-flood neighborhood',
+    soThat: 'I can target structural interventions (drainage, barriers, zoning limits) to the most exposed areas',
     useCases: [
       'UC-01: Specialize the general resilience plan into flood-driven actions per neighborhood.',
       'UC-02: Actions reference the 100-year flood baseline so scope is explicit.',
@@ -286,10 +332,28 @@ const STORIES: Story[] = [
   },
 
   {
+    id: 'H-019', epicId: 'epic-ai',
+    title: 'Energy cost mitigation plan generator',
+    asA: 'Urban Planner', iWant: 'AI-generated energy-cost mitigation actions per high-burden neighborhood',
+    soThat: 'I can direct subsidies, efficiency upgrades and demand-management programs to the households that need them most',
+    useCases: [
+      'UC-01: Specialize the general resilience plan into energy-cost actions (subsidies, insulation/efficiency, demand response), driven by the energy-burden score.',
+      'UC-02: Each action notes whether the burden is consumption-driven or ability-to-pay-driven, so the recommendation fits the cause.',
+    ],
+    rules: [
+      'Refines the general plan (H-010) using the energy-burden score (H-018) as the primary signal — same pattern as H-015 / H-016.',
+    ],
+    roleEfforts: [{ roleId: 'ai', days: 5 }],
+    estimationState: 'manual', mvpPct: 45, mvpEnabled: false,
+    dependsOn: ['H-010', 'H-018'], isDraft: false, isProtected: true,
+    datasetIds: ['dataset-gridwatch'], labels: ['ai', 'planning', 'energy'],
+  },
+
+  {
     id: 'H-011', epicId: 'epic-ai',
     title: 'Plan export and sharing',
-    asA: 'PM', iWant: 'to export resilience plans as PDF and share a read-only link',
-    soThat: 'stakeholders outside the platform can review recommendations offline',
+    asA: 'Urban Planner', iWant: 'to export resilience plans as PDF and share a read-only link',
+    soThat: 'stakeholders outside the platform can review the recommendations offline',
     useCases: [
       'UC-01: One-click PDF export of the current plan view.',
       'UC-02: Shareable link valid for 30 days.',

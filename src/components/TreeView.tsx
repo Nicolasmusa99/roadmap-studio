@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types.ts'
 import type { ReorderResult } from '../lib/reorder.ts'
 import { epicEffortDays, epicWindow, componentEffortDays } from '../lib/aggregation.ts'
-import { storiesInScope } from '../lib/threats.ts'
+import { storiesInScope, storyDegradation } from '../lib/threats.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 import Toast from './Toast.tsx'
@@ -338,6 +338,7 @@ export default function TreeView({
                             const sched = schedMap.get(story.id)
                             const isSelected = story.id === selectedId
                             const isBlocked = sched?.blocked ?? false
+                            const degr = storyDegradation(story, state.config.riskLayers)
                             const durationLabel = isBlocked
                               ? '⊘'
                               : sched ? fmtWeeks(sched.durationDays, dpw) : '—'
@@ -393,6 +394,14 @@ export default function TreeView({
                                   )}
                                   {story.estimationState === 'auto' && (
                                     <span className="story-badge story-badge--auto">AUTO</span>
+                                  )}
+                                  {degr.degraded && (
+                                    <span
+                                      className="story-badge story-badge--degraded"
+                                      title={t('degradedTip', { dims: degr.lostDimensions.join(', ') })}
+                                    >
+                                      ⚠ −{degr.lostDimensions.map(d => d.toUpperCase()).join('/')}
+                                    </span>
                                   )}
                                   <span
                                     className={`story-duration${isBlocked ? ' story-duration--blocked' : ''}`}

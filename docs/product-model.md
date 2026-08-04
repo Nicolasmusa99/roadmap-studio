@@ -80,6 +80,13 @@ Modelo **híbrido** (filtro + scope visible):
   historias multi-riesgo (sin un label de amenaza único) nunca se filtran.
 - **Scope visible:** el sidebar muestra `SCOPE %` = esfuerzo aún en scope / esfuerzo total. El
   supuesto de scope queda **declarado, no oculto**.
+- **Degradación (no bloqueo) vía `amplifiedBy`:** una historia puede declarar amenazas que la
+  *enriquecen* sin gatearla (`story.amplifiedBy`, distinto de `labels`). Cuando esa amenaza se apaga,
+  la historia **no** se filtra: sigue agendada y solo pierde esa dimensión, mostrada como score
+  *degradado* (badge `⚠ −HEAT`), nunca BLOCKED. Es lo que permite el cruce heat↔energy: el energy
+  burden score (label `energy`, `amplifiedBy: ['heat']`) sobrevive al apagar heat con su componente
+  propio (consumo × capacidad de pago) y pierde solo la amplificación por calor. `storyDegradation()`
+  en `lib/threats.ts` reporta las dimensiones perdidas; no toca el scope ni el scheduler.
 
 Nota: el modelo anterior era un multiplicador lineal `capasActivas / capasTotales` sobre el esfuerzo
 de todas las historias. Se reemplazó por el filtrado porque es más tangible ("¿y si dropeamos

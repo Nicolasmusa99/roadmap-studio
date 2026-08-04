@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { isStoryInScope, storiesInScope, scopeSummary } from '../threats'
+import { isStoryInScope, storiesInScope, scopeSummary, storyDegradation } from '../threats'
 import type { Story, RiskLayer } from '../types'
 
-const mkStory = (id: string, labels: string[], days = 5): Story => ({
+const mkStory = (id: string, labels: string[], days = 5, amplifiedBy?: string[]): Story => ({
   id, epicId: 'e', title: id,
   asA: '', iWant: '', soThat: '',
   useCases: [], rules: [],
   roleEfforts: [{ roleId: 'data', days }],
   estimationState: 'manual', mvpPct: 50, mvpEnabled: false,
   dependsOn: [], isDraft: false, isProtected: false,
-  datasetIds: [], labels,
+  datasetIds: [], labels, amplifiedBy,
 })
 
 const layers = (active: Record<string, boolean>): RiskLayer[] =>
@@ -70,5 +70,37 @@ describe('scopeSummary', () => {
     expect(s.storiesInScope).toBe(1)
     expect(s.effortInScope).toBe(30)
     expect(s.effortTotal).toBe(40)
+  })
+})
+
+describe('storyDegradation (heat↔energy cross)', () => {
+  it('is not degraded when the amplifying threat is active', () => {
+    const ls = layers({ heat: true, energy: true })
+    const burden = mkStory('burden', ['scoring', 'energy'], 5, ['heat'])
+    const d = storyDegradation(burden, ls)
+    expect(d.degraded).toBe(false)
+    expect(d.lostDimensions).toEqual([])
+  })
+
+  it('degrades (loses the heat dimension) but stays IN SCOPE when heat is off', () => {
+    const ls = layers({ heat: false, energy: true })
+    const burden = mkStory('burden', ['scoring', 'energy'], 5, ['heat'])
+    // Still schedulable — no 'heat' label, so it is never filtered...
+    expect(isStoryInScope(burden, ls)).toBe(true)
+    // ...but it reports the lost dimension so the UI can show it degraded, not blocked.
+    const d = storyDegradation(burden, ls)
+    expect(d.degraded).toBe(true)
+    expect(d.lostDimensions).toEqual(['heat'])
+  })
+
+  it('IS filtered when its own threat (energy) is off — degradation only applies to amplifiers', () => {
+    const ls = layers({ heat: true, energy: false })
+    const burden = mkStory('burden', ['scoring', 'energy'], 5, ['heat'])
+    expect(isStoryInScope(burden, ls)).toBe(false)
+  })
+
+  it('has no degradation for a story with no amplifiedBy', () => {
+    const ls = layers({ heat: false })
+    expect(storyDegradation(mkStory('plain', ['scoring']), ls).degraded).toBe(false)
   })
 })

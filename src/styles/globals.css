@@ -509,6 +509,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .story-badge--mvp  { background: var(--oe-green-weak); color: var(--oe-green-dim); }
 .story-badge--auto { background: #FFF3CD; color: #856404; }
 .story-badge--blocked { background: var(--blocked-weak); color: var(--blocked); }
+.story-badge--degraded { background: #FDE6C8; color: #8A5A1B; }
 
 /* ─── Right panel ────────────────────────────────────────────────────────────── */
 .right-panel {

@@ -85,6 +85,12 @@ export interface Story {
   isProtected: boolean // true = can't be deleted (brief stories)
   datasetIds: string[]
   labels: string[]
+  // Graceful degradation (heat↔energy cross): threat names that ENRICH this story
+  // without gating it. Unlike a label, an amplifying threat going inactive does NOT
+  // filter the story out — it keeps its own value and only loses that dimension,
+  // rendered as a "degraded" badge. Distinct from labels precisely so a multi-signal
+  // score (e.g. energy burden) survives with reduced precision instead of vanishing.
+  amplifiedBy?: string[]
 }
 
 export interface Epic {

@@ -163,6 +163,7 @@ export default function App() {
             scheduled={selectedScheduled}
             daysPerWeek={roadmap.state.config.calendarConfig.daysPerWeek}
             teamRoles={roadmap.state.config.teamRoles}
+            riskLayers={roadmap.state.config.riskLayers}
             effortScale={roadmap.state.config.effortScale}
             epicStories={epicStories}
             onUpdateStory={roadmap.updateStory}

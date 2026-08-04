@@ -102,6 +102,57 @@ una elección, no un hecho.
 su scoring **y** su plan de mitigación del Árbol y el Timeline — un mismo gesto recorta el trabajo
 consistentemente de punta a punta.
 
+## Corrección de personas (historias de producto)
+
+Las historias de producto hablaban todas como `As a PM…` — un error: la persona de una historia de
+la **plataforma Lumeria** tiene que ser el usuario real del dominio, no el PM que gestiona el
+roadmap. El `so that` ahora expresa **valor de usuario**, no consistencia interna del sistema.
+
+| Historia(s) | Persona | Por qué |
+|---|---|---|
+| H-001 · H-002 · H-003 (ingesta) | **Data Engineer** | Excepción legítima: la ingesta/normalización es trabajo técnico; el valor es que la plataforma tenga datos vivos. |
+| H-004 mapa base · H-005/H-006 overlays · H-017 energy overlay | **Urban Planner** | Ubica y compara riesgo por zona; las overlays son su superficie de decisión espacial. |
+| H-007 · H-008 scoring · H-018 energy burden | **Council Risk Analyst** | Rankea y prioriza barrios; defiende ante el council dónde se interviene primero. |
+| H-009 índice multi-riesgo | **member of the decision board** | Quiere una sola cifra honesta por barrio para priorizar sin malabarear tres scores. |
+| H-010 plan general · H-016 flood mit. · H-019 energy mit. · H-011 export | **Urban Planner** | Recibe intervenciones priorizadas y accionables, las lleva al council y las comparte. |
+| H-015 heat mitigation | **Emergency Coordinator** | Respuesta al calor (centros de enfriamiento, sombra) es gestión de emergencias. |
+| H-012 · H-013 · H-014 (diseño) | **Product Designer** | Ya correctas: no son features de la plataforma, son el trabajo real del diseñador del equipo. |
+
+Nota: la ingesta queda técnica **a propósito** (ahí la persona técnica *es* la real); todo el resto
+—mapa, overlays, scoring, planes, export— habla como el usuario de negocio que obtiene el valor.
+
+## Energy: pipeline propio + cruce heat↔energy con degradación
+
+Antes `energy` solo tenía dataset (GridWatch); `heat` y `flood` tenían pipeline completo. Ahora
+`energy` lo espeja, pero modelado como problema de **COSTO / CONSUMO**, no de riesgo físico:
+
+| Historia | Epic | Rol · esfuerzo | Depende de | Por qué |
+|---|---|---|---|---|
+| H-017 Energy stress overlay | Geospatial Visualizer | Full-stack 5d | H-010, H-004, H-003, H-013 | Pinta el mapa por carga de red / intensidad de consumo por barrio (GridWatch). |
+| H-018 Energy burden score | Risk Insights | Data 5d · AI 5d | H-010, H-003 | Rankea vulnerabilidad energética = consumo × (1/capacidad de pago). Bajos ingresos + alto consumo = más burden. |
+| H-019 Energy cost mitigation plan | AI Mitigation Plans | AI 5d | H-010, H-018 | Refina el plan general en subsidios / eficiencia / gestión de demanda (patrón H-015/H-016). |
+
+**El cruce heat↔energy es por DEGRADACIÓN, no por bloqueo.** El energy burden score tiene dos
+componentes: uno **propio** (consumo × capacidad de pago) y uno de **amplificación por calor** (olas
+de calor → pico de A/C → más estrés y costo de red). Al **desmarcar heat**, H-018 **no** se filtra
+ni desaparece —no lleva label `heat`, solo `scoring`/`energy`—: sigue vivo con su componente propio
+y **solo pierde la dimensión de amplificación**, mostrado en la UI como score *degradado*
+(badge `⚠ −HEAT`), nunca como BLOCKED. Se modela con un campo nuevo `amplifiedBy` en la historia
+(amenazas que la *enriquecen* sin gatearla). H-009 captura la interacción como **crisis compuesta**
+(alto heat risk **Y** alto energy burden se refuerzan, no se suman) y también degrada al apagar
+cualquier amenaza en vez de colapsar a un número parcial.
+
+**Decisión de secuencia (declarada, no accidente): energy es post-MVP.** Medido contra el baseline,
+el scheduler serializa **cada rol como recurso único** (el `people` solo acelera la duración, no da
+slots paralelos); todos los roles salvo `design` están back-to-back hasta H-010. Por eso **cualquier**
+historia de energy que use data/ai/full-stack **antes** de H-010 empuja el MVP de +2 wk a **+3 wk**
+—incluso la versión independiente sin cruce—. Para respetar el forecast comprometido, las tres
+historias de energy se **secuencian después del checkpoint MVP (H-010)**: el MVP es heat-focused,
+energy es Beta. La dependencia a H-010 es una decisión de scope **visible en el grafo**, no un dato
+oculto. Con un solo AI/Data Engineer no se puede tener energy en paralelo Y el +2 wk: el número es
+una elección declarada, no un hecho. (Palanca en vivo: si el board quiere energy en el MVP, la tool
+muestra el costo — +1 semana.)
+
 ## Cierre
 
 Devolver la decisión al board con dos escenarios lado a lado (A: cobertura completa, M1 tarde; B:

@@ -14,6 +14,7 @@ export const es: typeof en = {
   legendAuto: 'AUTO — estimación auto-sugerida del epic (nunca tocada aún).',
   legendScope: 'SCOPE % — parte del esfuerzo total aún dentro de las amenazas activas.',
   legendTargetForecast: 'Target = fecha comprometida · Forecast = fin proyectado.',
+  legendDegraded: 'DEGRADED — la historia corre sin una dimensión que la amplifica (ej. energy burden sin heat). No está bloqueada, solo reducida.',
 
   // ── LeftPanel ────────────────────────────────────────────────────────────
   team: 'EQUIPO',
@@ -59,6 +60,9 @@ export const es: typeof en = {
   // ── TreeView ─────────────────────────────────────────────────────────────
   nStories: '{n} historias',
   blocked: 'BLOQUEADO',
+  degradedBadge: 'DEGRADADO',
+  degradedTip: 'Degradado — la dimensión {dims} está apagada (su capa de amenaza está sin marcar). El score conserva su componente propio; no está bloqueado, solo con menos precisión.',
+  sectionDegraded: 'DEGRADACIÓN',
   dragEpicTip: 'Arrastrar para cambiar prioridad del STAGE',
   dragStoryTip: 'Arrastrar para cambiar prioridad',
   reorderEpicAria: 'Reordenar STAGE',
