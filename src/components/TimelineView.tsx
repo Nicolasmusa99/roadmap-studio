@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types.ts'
+import type { MilestoneForecast } from '../lib/milestones.ts'
 import { epicWindow } from '../lib/aggregation.ts'
 import { parseDate, formatDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
@@ -11,6 +12,7 @@ interface Props {
   onSelect: (id: string | null) => void
   selectedMilestoneId: string | null
   onSelectMilestone: (id: string | null) => void
+  forecasts: Map<string, MilestoneForecast>
 }
 
 const MS_PER_DAY = 86_400_000
@@ -34,6 +36,7 @@ export default function TimelineView({
   onSelect,
   selectedMilestoneId,
   onSelectMilestone,
+  forecasts,
 }: Props) {
   const { t } = useI18n()
 
@@ -170,16 +173,33 @@ export default function TimelineView({
           {state.milestones.map(ms => {
             if (!ms.target) return null
             const isSel = ms.id === selectedMilestoneId
+            const fc = forecasts.get(ms.id)
+            const atRisk = fc?.status === 'at-risk' || fc?.status === 'blocked'
             return (
-              <div
-                key={ms.id}
-                className={`tl-marker${isSel ? ' tl-marker--selected' : ''}`}
-                style={{ left: `${leftPct(ms.target)}%` }}
-                data-testid={`ms-marker-${ms.id}`}
-                data-ms-id={ms.id}
-                onClick={() => onSelectMilestone(isSel ? null : ms.id)}
-              >
-                <span className="tl-marker-flag">◇ {ms.name}</span>
+              <div key={ms.id}>
+                {/* Target marker (fixed, committed) */}
+                <div
+                  className={[
+                    'tl-marker',
+                    atRisk ? 'tl-marker--risk' : '',
+                    isSel ? 'tl-marker--selected' : '',
+                  ].filter(Boolean).join(' ')}
+                  style={{ left: `${leftPct(ms.target)}%` }}
+                  data-testid={`ms-marker-${ms.id}`}
+                  data-ms-id={ms.id}
+                  data-status={fc?.status ?? 'on-track'}
+                  onClick={() => onSelectMilestone(isSel ? null : ms.id)}
+                >
+                  <span className="tl-marker-flag">◇ {ms.name}</span>
+                </div>
+                {/* Forecast marker (calculated) — only when it slips past target */}
+                {fc?.status === 'at-risk' && fc.forecast && (
+                  <div className="tl-forecast" style={{ left: `${leftPct(fc.forecast)}%` }}>
+                    <span className="tl-forecast-flag" data-testid={`ms-gap-${ms.id}`}>
+                      {ms.name} {t('msGap', { n: String(fc.gapWeeks) })}
+                    </span>
+                  </div>
+                )}
               </div>
             )
           })}

@@ -2,11 +2,13 @@ import { useState, useMemo, useCallback } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types'
 import { createInitialState } from '../data/baseline'
 import { schedule } from '../lib/scheduler'
+import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 
 export interface RoadmapState {
   state: AppState
   scheduledStories: ScheduledStory[]
+  milestoneForecasts: Map<string, MilestoneForecast>
   setTeamPeople: (roleId: string, people: number) => void
   toggleRiskLayer: (layerId: string) => void
   toggleMvpStory: (storyId: string) => void
@@ -29,6 +31,15 @@ export function useRoadmapState(): RoadmapState {
       }),
     [state.stories, state.config.teamRoles, state.config.riskLayers, state.config.calendarConfig],
   )
+
+  // Milestone forecast/status/gap — derived from the schedule, never stored (US-016).
+  const milestoneForecasts = useMemo(() => {
+    const m = new Map<string, MilestoneForecast>()
+    for (const ms of state.milestones) {
+      m.set(ms.id, milestoneForecast(ms, scheduledStories, state.config.calendarConfig))
+    }
+    return m
+  }, [state.milestones, scheduledStories, state.config.calendarConfig])
 
   const setTeamPeople = useCallback((roleId: string, people: number) => {
     setState(s => ({
@@ -141,6 +152,7 @@ export function useRoadmapState(): RoadmapState {
   return {
     state,
     scheduledStories,
+    milestoneForecasts,
     setTeamPeople,
     toggleRiskLayer,
     toggleMvpStory,

@@ -26,3 +26,18 @@ test('create a milestone spanning two epics; marker + composition appear', async
   await expect(comp).toContainText('Data Foundation')
   await expect(comp).toContainText('Risk Map Viewer')
 })
+
+// US-016 — the baseline MVP milestone has an intentionally aggressive target, so
+// its forecast slips past it and it must render at-risk (--warn) with the gap.
+test('baseline MVP milestone is at-risk with a visible gap', async ({ page }) => {
+  await page.goto('/')
+  await page.getByTestId('view-toggle-timeline').click()
+
+  const marker = page.getByTestId('ms-marker-ms-mvp')
+  await expect(marker).toHaveAttribute('data-status', 'at-risk')
+  await expect(marker).toHaveClass(/tl-marker--risk/)
+  await expect(page.getByTestId('ms-gap-ms-mvp')).toContainText('+')
+
+  await marker.click()
+  await expect(page.getByTestId('ms-status')).toHaveAttribute('data-status', 'at-risk')
+})

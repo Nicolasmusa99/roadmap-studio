@@ -80,12 +80,18 @@ export default function App() {
               onSelect={selectStory}
               selectedMilestoneId={selectedMilestoneId}
               onSelectMilestone={selectMilestone}
+              forecasts={roadmap.milestoneForecasts}
             />
           )}
         </div>
         {selectedMilestone ? (
           <MilestoneDetail
             milestone={selectedMilestone}
+            forecast={
+              roadmap.milestoneForecasts.get(selectedMilestone.id) ?? {
+                forecast: null, status: 'blocked', gapWeeks: 0,
+              }
+            }
             state={roadmap.state}
             onClose={() => selectMilestone(null)}
           />

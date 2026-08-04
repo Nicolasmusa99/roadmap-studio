@@ -1,9 +1,11 @@
 import type { AppState, Milestone } from '../lib/types.ts'
+import type { MilestoneForecast } from '../lib/milestones.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
 interface Props {
   milestone: Milestone
+  forecast: MilestoneForecast
   state: AppState
   onClose: () => void
 }
@@ -15,8 +17,14 @@ function fmtDate(iso: string): string {
 
 // US-015 — a milestone always shows which stories compose it and which epic each
 // comes from, so any date movement is explainable to the board (anti-friction rule).
-export default function MilestoneDetail({ milestone, state, onClose }: Props) {
+export default function MilestoneDetail({ milestone, forecast, state, onClose }: Props) {
   const { t } = useI18n()
+
+  const statusMeta = {
+    'on-track': { cls: 'ms-status--ok',      label: t('msOnTrack') },
+    'at-risk':  { cls: 'ms-status--risk',    label: t('msAtRisk') },
+    'blocked':  { cls: 'ms-status--blocked', label: t('msBlocked') },
+  }[forecast.status]
 
   const epicOf = new Map(state.stories.map(s => [s.id, s.epicId]))
   const epicName = new Map(state.epics.map(e => [e.id, e.name]))
@@ -39,10 +47,27 @@ export default function MilestoneDetail({ milestone, state, onClose }: Props) {
       </div>
       <div className="rp-title">{milestone.name}</div>
 
-      <div className="rp-section-label">{t('msTarget')}</div>
-      <span className="rp-date-val" style={{ fontFamily: 'var(--font-mono)' }}>
-        {fmtDate(milestone.target)}
-      </span>
+      <div className="rp-dates" style={{ marginTop: 4 }}>
+        <div>
+          <div className="rp-date-lbl">{t('msTarget')}</div>
+          <span className="rp-date-val">{fmtDate(milestone.target)}</span>
+        </div>
+        <div>
+          <div className="rp-date-lbl">{t('msForecast')}</div>
+          <span className="rp-date-val" data-testid="ms-forecast">
+            {forecast.forecast ? fmtDate(forecast.forecast) : '—'}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 8 }}>
+        <span className={`ms-status ${statusMeta.cls}`} data-testid="ms-status" data-status={forecast.status}>
+          {statusMeta.label}
+          {forecast.status === 'at-risk' && (
+            <span className="ms-gap">{t('msGap', { n: String(forecast.gapWeeks) })}</span>
+          )}
+        </span>
+      </div>
 
       <div className="rp-section-label">
         {t('msComposition')} · {milestone.storyIds.length}
