@@ -201,6 +201,22 @@ export default function TimelineView({
               : ''
             return (
               <div key={ms.id}>
+                {/* Gap shading — amber block between target and forecast */}
+                {atRisk && fc?.forecast && (
+                  <div
+                    className="tl-gap-band"
+                    style={{
+                      left:  `${leftPct(ms.target)}%`,
+                      width: `${leftPct(fc.forecast) - leftPct(ms.target)}%`,
+                    }}
+                    data-testid={`ms-gap-band-${ms.id}`}
+                    aria-hidden="true"
+                  >
+                    <span className="tl-gap-label" data-testid={`ms-gap-label-${ms.id}`}>
+                      {t('msGap', { n: String(fc.gapWeeks) })}
+                    </span>
+                  </div>
+                )}
                 {/* Target marker — always grey/dashed: committed date */}
                 <div
                   className={[

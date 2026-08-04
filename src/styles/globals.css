@@ -1153,6 +1153,33 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .tl-marker--risk.tl-marker--selected .tl-marker-flag {
   background: var(--warn); color: #fff;
 }
+/* Gap band — amber fill between target (committed) and forecast (projected) */
+.tl-gap-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  border-left: none;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.tl-gap-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--warn);
+  opacity: 0.8;
+  white-space: nowrap;
+  pointer-events: none;
+  /* keep it centered; if band is too narrow, it just clips */
+  padding: 0 4px;
+}
+
 /* Forecast marker — amber solid line: pointer-events auto so the title tooltip fires */
 .tl-forecast {
   position: absolute;
