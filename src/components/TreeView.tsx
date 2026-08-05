@@ -76,7 +76,6 @@ export default function TreeView({
     [state.components, state.epics],
   )
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(allIds))
-  const [rationaleOpen, setRationaleOpen] = useState(false)
   const { t } = useI18n()
 
   // ── Drag state ─────────────────────────────────────────────────────────────
@@ -205,25 +204,7 @@ export default function TreeView({
     <main className="tree-view">
       {toast && <Toast message={toast} onClose={dismissToast} />}
 
-      {/* Sequence rationale — why this order, collapsed by default */}
-      <div className="tree-rationale">
-        <button
-          className="tree-rationale-toggle"
-          onClick={() => setRationaleOpen(o => !o)}
-          aria-expanded={rationaleOpen}
-        >
-          {rationaleOpen ? '▼' : '▶'} WHY THIS SEQUENCE
-        </button>
-        {rationaleOpen && (
-          <div className="tree-rationale-body">
-            <p>
-              The order is set by dependencies: scoring needs the map, mitigation needs the scores.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {state.components.map(comp => {
+{state.components.map(comp => {
         const compEpics = state.epics.filter(e => e.componentId === comp.id)
         const compStories = scopedStories.filter(s => compEpics.some(e => e.id === s.epicId))
         const compEffort = componentEffortDays(comp.id, state.epics, scopedStories)
