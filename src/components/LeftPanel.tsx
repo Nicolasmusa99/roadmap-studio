@@ -89,14 +89,7 @@ export default function LeftPanel({ teamRoles, riskLayers, stories, onSetPeople,
             </span>
           </label>
         ))}
-        {/* Energy phase note — explains why energy stories are all post-MVP */}
-        <div className="energy-phase-note">
-          <span className="energy-phase-note-icon">ⓘ</span>
-          <span>
-            Heat y flood entran al MVP por ser riesgo físico. Energy es fase 2.
-          </span>
-        </div>
-        {/* Scope readout — the assumption stays declared, never hidden (#12). */}
+{/* Scope readout — the assumption stays declared, never hidden (#12). */}
         <div className="scope-readout" data-testid="scope-readout">
           <div className="scope-readout-bar">
             <div className="scope-readout-fill" style={{ width: `${scope.pct}%` }} />
