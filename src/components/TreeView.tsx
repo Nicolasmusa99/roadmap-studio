@@ -217,7 +217,7 @@ export default function TreeView({
         {rationaleOpen && (
           <div className="tree-rationale-body">
             <p>
-              El orden lo fijan las dependencias: el scoring necesita el mapa, la mitigación necesita los scores.
+              The order is set by dependencies: scoring needs the map, mitigation needs the scores.
             </p>
           </div>
         )}
