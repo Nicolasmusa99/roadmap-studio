@@ -76,6 +76,7 @@ export default function TreeView({
     [state.components, state.epics],
   )
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(allIds))
+  const [rationaleOpen, setRationaleOpen] = useState(false)
   const { t } = useI18n()
 
   // ── Drag state ─────────────────────────────────────────────────────────────
@@ -203,6 +204,42 @@ export default function TreeView({
   return (
     <main className="tree-view">
       {toast && <Toast message={toast} onClose={dismissToast} />}
+
+      {/* Sequence rationale — why this order, collapsed by default */}
+      <div className="tree-rationale">
+        <button
+          className="tree-rationale-toggle"
+          onClick={() => setRationaleOpen(o => !o)}
+          aria-expanded={rationaleOpen}
+        >
+          {rationaleOpen ? '▼' : '▶'} WHY THIS SEQUENCE
+        </button>
+        {rationaleOpen && (
+          <div className="tree-rationale-body">
+            <p>
+              <strong>Data Foundation goes first</strong> — it's the only hard dependency.
+              Visualizer, Risk Insights and AI Mitigation all consume it; no one can start
+              without it.
+            </p>
+            <p>
+              The three surface epics are <strong>ordered by time-to-value</strong>, not
+              by technical necessity. Risk Insights doesn't need the map (both depend on the
+              foundation, not on each other), so they could run in parallel once the foundation
+              is live. The current order prioritises Visualizer first: a live map is the most
+              tangible demo, fastest buy-in, and cheapest end-to-end validation of the pipeline.
+            </p>
+            <p>
+              AI Mitigation needs the risk scores (soft dependency on Risk Insights), but can
+              scaffold with synthetic data before integration — making it the most parallelisable
+              of the three.
+            </p>
+            <p className="tree-rationale-coda">
+              The tool lets you drag epics to explore other valid orders. Only Data Foundation
+              is locked.
+            </p>
+          </div>
+        )}
+      </div>
 
       {state.components.map(comp => {
         const compEpics = state.epics.filter(e => e.componentId === comp.id)

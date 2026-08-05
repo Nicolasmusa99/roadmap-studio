@@ -89,6 +89,16 @@ export default function LeftPanel({ teamRoles, riskLayers, stories, onSetPeople,
             </span>
           </label>
         ))}
+        {/* Energy phase note — explains why energy stories are all post-MVP */}
+        <div className="energy-phase-note">
+          <span className="energy-phase-note-icon">ⓘ</span>
+          <span>
+            Heat &amp; flood are physical-hazard risks with emergency response — they enter the MVP.
+            Energy is cost/consumption analysis that matures on a time series. GridWatch is ingested
+            from day one, but the energy product (overlay · score · plan) is Phase 2: with one
+            AI/Data engineer, energy in parallel pushes the MVP from +2 wk to +3 wk.
+          </span>
+        </div>
         {/* Scope readout — the assumption stays declared, never hidden (#12). */}
         <div className="scope-readout" data-testid="scope-readout">
           <div className="scope-readout-bar">
