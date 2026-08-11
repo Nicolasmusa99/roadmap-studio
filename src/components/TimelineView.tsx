@@ -147,6 +147,9 @@ export default function TimelineView({
     dt.setDate(dt.getDate() + d)
     ticks.push({ pct: (d / domain.span) * 100, label: fmtTick(formatDate(dt)) })
   }
+  // Show at most ~12 week labels so they never overlap on long roadmaps; every
+  // gridline stays, only the text is thinned out. (Cosmetic — axis legibility.)
+  const labelStep = Math.max(1, Math.ceil(ticks.length / 12))
 
   return (
     <main className="timeline-view" data-testid="timeline-view">
@@ -178,7 +181,7 @@ export default function TimelineView({
           <div className="tl-track">
             {ticks.map((tk, i) => (
               <div key={i} className="tl-tick" style={{ left: `${tk.pct}%` }}>
-                <span className="tl-tick-lbl">{tk.label}</span>
+                {i % labelStep === 0 && <span className="tl-tick-lbl">{tk.label}</span>}
               </div>
             ))}
           </div>
