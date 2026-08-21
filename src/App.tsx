@@ -15,7 +15,9 @@ import MilestoneModal from './components/MilestoneModal.tsx'
 import MilestoneDetail from './components/MilestoneDetail.tsx'
 import StoryModal from './components/StoryModal.tsx'
 import HomeScreen from './components/HomeScreen.tsx'
+import CsvImportModal from './components/CsvImportModal.tsx'
 import { useI18n } from './i18n/I18nContext.tsx'
+import type { ImportedRow } from './lib/csvImport.ts'
 
 // ── Top-level router ──────────────────────────────────────────────────────────
 // Manages the collection of roadmaps. When activeId is null, the home screen is
@@ -89,6 +91,7 @@ function RoadmapWorkspace({
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null)
   const [view, setView] = useState<View>('tree')
   const [modalOpen, setModalOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [storyModal, setStoryModal] = useState<{
     epicId: string
     initialFields?: Partial<NewStoryInput>
@@ -155,6 +158,14 @@ function RoadmapWorkspace({
     const id = state.addStory(storyModal.epicId, fields)
     setStoryModal(null)
     selectStory(id)
+  }
+
+  function handleImportStories(rows: ImportedRow[]) {
+    for (const row of rows) {
+      state.addStory(row.epicId, row.fields)
+    }
+    setImportOpen(false)
+    setView('tree')
   }
 
   function handleDeleteRole(roleId: string) {
@@ -254,6 +265,13 @@ function RoadmapWorkspace({
                 ◇ {t('msNew')}
               </button>
             )}
+            <button
+              className="btn-checkpoint"
+              data-testid="import-csv"
+              onClick={() => setImportOpen(true)}
+            >
+              ↑ Import CSV
+            </button>
           </div>
           {view === 'tree' && (
             <TreeView
@@ -341,6 +359,17 @@ function RoadmapWorkspace({
           isCopy={storyModal.isCopy}
           onSave={handleSaveStory}
           onClose={() => setStoryModal(null)}
+        />
+      )}
+
+      {importOpen && (
+        <CsvImportModal
+          epics={state.state.epics}
+          teamRoles={state.state.config.teamRoles}
+          effortScale={state.state.config.effortScale}
+          riskLayers={state.state.config.riskLayers}
+          onImport={handleImportStories}
+          onClose={() => setImportOpen(false)}
         />
       )}
     </div>
