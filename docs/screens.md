@@ -1,42 +1,86 @@
 # Screen Inventory — Roadmap Studio
 
-> 36 pantallas y estados, derivados de las historias. Los estados derivados se linkean por Clave Foránea a su pantalla base.
+> Inventario de pantallas y estados de la herramienta genérica. Los estados derivados se linkean por
+> Clave Foránea a su pantalla base. Marcas: `[NUEVO]` = posterior al modelo original; `[VERIFICAR]` =
+> chequear contra el código.
+
+## Bloque A — Multi-roadmap y navegación `[NUEVO]`
 
 | ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
 |---|---|---|---|---|
-| SCR-001 | Workspace — Vista Árbol (base) | Web | — | Layout principal de tres zonas. Izquierda: palancas (equipo por rol con steppers, toggles de amenazas, profundidad MVP/Full). Centro: árbol expandible Componente → Epic → Historia, con esfuerzo y duración agregados por nivel. Derecha: flags de trade-off, detalle y escenarios. Barra superior con chips de supuestos globales y botón Reset. (US-001) |
-| SCR-002 | Workspace — Vista Timeline (Gantt) | Web | SCR-001 | Toggle de vista desde SCR-001. El centro muestra los epics como barras posicionadas en el tiempo, con marcadores de milestone y conexiones de dependencia. Los paneles laterales se mantienen. (US-002) |
-| SCR-003 | Epic — crear | Web | SCR-001 | Panel/modal para crear un epic: naming [Área] — [Resultado], objetivo, criterios de alto nivel, milestone y componente. Nace sin historias (duración 0) y aparece de inmediato en árbol y timeline. (US-003) |
-| SCR-004 | Epic — editar / eliminar | Web | SCR-001 | Panel de edición del epic (nombre, objetivo, criterios, milestone). Eliminar pide confirmación y arrastra sus historias. Los epics del brief no son eliminables (no muestran botón de borrar). (US-004) |
-| SCR-005 | Historia — crear (modo borrador) | Web | SCR-001 | Formulario rápido: solo nombre, estimación por rol y dependencia. La historia entra al timeline al instante con badge "borrador". Pensado para crear en vivo sin frenar la demo. (US-005) |
-| SCR-006 | Historia — completar (modo completo) | Web | SCR-005 | Formulario completo sobre una historia borrador: Como/Quiero/Para, Casos de uso, Reglas, labels feat-*, profundidad. Al redactarse, desaparece el badge "borrador". (US-005) |
-| SCR-007 | Historia — vista lectura | Web | SCR-001 | Panel de detalle en modo lectura: Como/Quiero/Para, UCs, Reglas, Estados, más los campos de planificación (componente, epic, labels, estimación, rol, dependencias, profundidad). Control "Editar". (US-006) |
-| SCR-008 | Historia — modo edición | Web | SCR-007 | Todos los campos de la historia editables (texto, UCs, reglas, estimación, rol, dependencias, profundidad). Guardar recalcula el timeline al instante; cancelar revierte al estado previo. (US-007) |
-| SCR-009 | Historia — eliminar / mover | Web | SCR-007 | Acciones para eliminar la historia (con confirmación) o reasignarla a otro epic. Al mover, el esfuerzo migra de un epic al otro y las dependencias se revalidan. (US-008) |
-| SCR-010 | Historia — estimación por rol | Web | SCR-008 | Campos de esfuerzo en semanas por rol (Full-stack, Data, AI, Design) dentro de la edición. Muestra la duración derivada = esfuerzo del rol cuello de botella ÷ gente de ese rol. (US-009) |
-| SCR-011 | Historia — asignación de rol | Web | SCR-008 | Selección de los roles que ejecutan la historia. Si un rol asignado se quita del equipo, la historia se marca bloqueada y el efecto sube al milestone. (US-010) |
-| SCR-012 | Panel de equipo | Web | SCR-001 | Steppers por rol para subir/bajar personas. Cada cambio recalcula el timeline (compresión/estiramiento). Un rol en cero bloquea las historias y epics que lo requieren. (US-011) |
-| SCR-013 | Vista de carga por rol | Web | SCR-001 | Fila/panel "Role load ÷ people": suma del esfuerzo por rol sobre todos los epics dividido por la gente de ese rol. Resalta el rol cuello de botella. Se actualiza en vivo. (US-012) |
-| SCR-014 | Historia — declarar dependencia | Web | SCR-008 | Selector de dependencia hacia otra historia. Impide ciclos. Distingue dependencia interna (mismo epic, no sale) de cruzada (otro epic, se propaga como dependencia entre epics). (US-013) |
-| SCR-015 | Timeline — dependencias y reordenamiento | Web | SCR-002 | Las dependencias que cruzan epics se ven como conexiones. El PM reordena la prioridad de epics sin dependencia dura; si un movimiento rompe una dependencia real, la tool lo frena y explica por qué. (US-014) |
-| SCR-016 | Milestone — crear (transversal) | Web | SCR-001 | Modal para crear un milestone: nombre, fecha target ficticia y selección de historias de cualquier epic. Muestra siempre qué historias lo componen y de qué epic vienen. (US-015) |
-| SCR-017 | Milestone — target vs forecast | Web | SCR-002 | Marcador en el timeline con target fijo y forecast calculado de sus historias. Se pone rojo si forecast > target, mostrando la brecha ("+2 semanas") y la causa del movimiento. (US-016) |
-| SCR-018 | Profundidad MVP / Full | Web | SCR-001 | Toggle MVP/Full por historia o epic. El esfuerzo se ajusta por el % de MVP de esa pieza; recalcula el timeline y muestra una nota de trade-off con lo que el MVP deja afuera. (US-017) |
-| SCR-019 | Toggle de amenazas (capas de riesgo) | Web | SCR-001 | Toggles de calor, inundación y energía. Apagar una reduce el esfuerzo de las historias que la cubren y acelera el timeline, con una nota de qué queda sin cubrir. (US-018) |
-| SCR-020 | Panel de supuestos y datasets globales | Web | SCR-001 | Panel superior editable: fuentes climáticas ficticias, resolución, cantidad de barrios, fecha de inicio. Permite agregar un dataset desde cero o editar los pre-cargados (poblados con carácter). (US-019) |
-| SCR-021 | Historia — supuestos locales | Web | SCR-007 | Dentro de las Reglas de la historia: supuestos propios de esa historia y los datasets que consume, listados en su detalle. Separados de los globales del panel. (US-020) |
-| SCR-022 | Comparador de escenarios | Web | SCR-001 | Guardar el estado actual como Escenario A o B y verlos lado a lado con sus milestones y fechas. No muestra un "ganador": expone el trade-off de cada camino. (US-021) |
-| SCR-023 | Fit por objetivo (visión) | Web | SCR-001 | Selector de objetivo (velocidad / cobertura / derisking). Muestra el fit del roadmap actual contra ese objetivo con la fórmula siempre a la vista. Cambiar el objetivo cambia el fit. [Estado: Visión — no necesariamente construido] (US-022) |
-| SCR-024 | Reset a baseline de fábrica | Web | SCR-001 | Acción "Reset" con confirmación breve. Devuelve equipo, scope, estimaciones y profundidad al baseline de fábrica inmutable, sin recargar la página ni perder las historias pre-cargadas. (US-023) |
-| SCR-025 | Aviso de restaurar sesión | Web | SCR-001 | Derivado de SCR-001: al reabrir la tool, aviso no bloqueante "Hay una sesión guardada — ¿Restaurar?" con botones Restaurar / Descartar. La sesión no sobrescribe el baseline. (US-024) |
-| SCR-026 | Exportar roadmap — configuración | Web | SCR-001 | Panel de exportación: elegir estado actual o escenario A/B, y formato (PDF para leer / imagen del timeline para pegar en un mail). Incluye los supuestos activos. (US-025) |
-| SCR-027 | Documento exportado (PDF / imagen) | PDF | SCR-026 | Archivo generado desde el cliente: timeline, epics, historias, milestones (target y forecast) y supuestos activos. Es una foto del roadmap en ese momento, no un documento vivo. (US-025) |
-| SCR-028 | Agregación de estimaciones (display) | Web | SCR-001 | Estado de árbol/timeline: en cada nivel (epic y componente) se muestra el esfuerzo total (suma) y la duración, con desglose por rol. Distingue "esfuerzo total" de "duración". (US-026) |
-| SCR-029 | Estimación sugerida (placeholder) | Web | SCR-008 | Una historia sin estimar muestra un valor sugerido (promedio de las historias estimadas del epic) marcado "estimado automáticamente". El epic indica cuántas historias son reales vs sugeridas. (US-027) |
-| SCR-030 | Historia — nueva (formulario completo) | Web | SCR-001 | Modal de creación con el set completo de campos: Como/Quiero/Para, Casos de uso, Reglas, esfuerzo por rol (selector de escala de días), rol, dependencia y MVP%. Al guardar, la historia entra al epic e impacta el timeline. Ningún campo queda asumido. (US-005) |
-| SCR-031 | Historia — copiar existente | Web | SCR-007 | Acción "Copiar" sobre una historia: duplica todos sus campos en una historia nueva editable, para partir de una base en vez de cero. (US-005) |
-| SCR-032 | Selector de esfuerzo (escala de días) | Web | SCR-030 | Control de escala acotada dentro del formulario/edición: 1d · 2d · 3d · 1sem · 10d · 2sem · 3sem · 4sem. Muestra el equivalente en semanas. La escala es una lista editable, no fija. (US-009, US-028) |
-| SCR-033 | Config — escala y conversión | Web | SCR-001 | Panel de configuración global: editar los pasos de la escala de esfuerzo y la constante "días por semana" (default 5). El cambio recalcula toda la agenda. (US-028) |
-| SCR-034 | Gestionar capas de riesgo | Web | SCR-001 | Panel de capas de riesgo: activar/desactivar, agregar una capa nueva (ej. sequía), editar o eliminar. Entra al cálculo de scope al instante. Lista editable, no las 3 del brief clavadas. (US-018) |
-| SCR-035 | Config — fecha de inicio y calendario | Web | SCR-001 | Panel de calendario: fecha de inicio configurable (default 24-ago-2026) y lista editable de feriados federales US. El timeline usa días hábiles y muestra los días salteados (fin de semana / feriados nombrados). (US-029) |
-| SCR-036 | Timeline — días hábiles y feriados | Web | SCR-002 | Estado del timeline con el eje en días hábiles: fines de semana y feriados aparecen marcados (feriado nombrado). Las fechas de historias y milestones son fechas reales de calendario. (US-029) |
+| SCR-A01 | Home — Mis Roadmaps | Web | — | Pantalla inicial. Lista de roadmaps guardados como cards. Cada card: nombre, indicadores de dashboard (checkpoint próximo en fecha/en riesgo, contadores de historias/roles/tags, fecha proyectada, última edición). Acciones: crear, abrir, renombrar, borrar (con confirmación). Estado vacío invita a crear el primer roadmap. (US-030, US-033) |
+| SCR-A02 | Home — estado vacío | Web | SCR-A01 | Primera apertura (localStorage vacío): mensaje "no hay roadmaps aún" + CTA para crear el primero. (US-030) |
+| SCR-A03 | Crear roadmap | Web | SCR-A01 | Input de nombre; al confirmar, crea un roadmap vacío (starter team) y entra a su workspace. (US-030) |
+| SCR-A04 | Selector de roadmap (dropdown) | Web | SCR-001 | En la barra superior del workspace: dropdown con los roadmaps para saltar entre ellos; botón "volver a Home". (US-032) |
+
+## Bloque B — Workspace (un roadmap)
+
+| ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
+|---|---|---|---|---|
+| SCR-001 | Workspace — Vista Árbol (base) | Web | — | Layout de tres zonas. Izquierda: palancas (equipo por rol con steppers, toggles de **tags**, profundidad MVP/Full, `SCOPE %`). Centro: árbol expandible Componente → Epic → Historia, con esfuerzo y duración agregados. Derecha: flags de trade-off, detalle y escenarios. Barra superior con selector de roadmap y botón Reset. (US-001) |
+| SCR-002 | Workspace — Vista Timeline (Gantt) | Web | SCR-001 | Toggle de vista. El centro muestra los epics como barras en el tiempo, con marcadores de milestone y conexiones de dependencia. Paneles laterales se mantienen. (US-002) |
+| SCR-003 | Epic — crear | Web | SCR-001 | Modal para crear un epic: naming [Área] — [Resultado], objetivo, criterios, milestone, componente. Nace sin historias (duración 0). (US-003) |
+| SCR-004 | Epic — editar / eliminar | Web | SCR-001 | Edición del epic. Eliminar pide confirmación (con conteo de historias) y arrastra sus historias; limpia dependencias huérfanas. Cualquier epic es editable/eliminable. (US-004) |
+| SCR-005 | Historia — crear (modo borrador) | Web | SCR-001 | Formulario rápido: nombre, estimación por rol, dependencia. Entra al timeline con badge "borrador". (US-005) |
+| SCR-006 | Historia — completar | Web | SCR-005 | Formulario completo sobre un borrador: Como/Quiero/Para, UCs, Reglas, tags, profundidad. Al completarse desaparece el badge. (US-005) |
+| SCR-007 | Historia — vista lectura | Web | SCR-001 | Detalle en lectura: Como/Quiero/Para, UCs, Reglas, Estados + planificación (componente, epic, tags, estimación, rol, dependencias, profundidad). Control "Editar". (US-006) |
+| SCR-008 | Historia — modo edición | Web | SCR-007 | Todos los campos editables. Guardar recalcula el timeline; cancelar revierte. (US-007) |
+| SCR-009 | Historia — eliminar / mover | Web | SCR-007 | Eliminar (con confirmación) o reasignar a otro epic. Al mover, el esfuerzo migra y las dependencias se revalidan. (US-008) |
+| SCR-030 | Historia — nueva (formulario completo) | Web | SCR-001 | Modal de creación con el set completo: Como/Quiero/Para, UCs, Reglas, esfuerzo por rol (escala), rol, dependencia, MVP%, tags. Ningún campo asumido. (US-005) |
+| SCR-031 | Historia — copiar existente | Web | SCR-007 | "Copiar": duplica todos los campos en una historia nueva editable. (US-005) |
+
+## Bloque C — Estimación, roles y equipo
+
+| ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
+|---|---|---|---|---|
+| SCR-010 | Historia — estimación por rol | Web | SCR-008 | Esfuerzo por rol (escala de días). Muestra la duración derivada = esfuerzo del rol cuello de botella ÷ gente. (US-009) |
+| SCR-011 | Historia — asignación de rol | Web | SCR-008 | Selección de los roles que ejecutan la historia. Si un rol asignado queda en 0, la historia se bloquea. (US-010) |
+| SCR-012 | Panel de equipo | Web | SCR-001 | Steppers por rol para subir/bajar personas. Cada cambio recalcula el timeline. Un rol en cero bloquea. (US-011) |
+| SCR-012b | Gestión de roles dinámicos | Web | SCR-012 | `[NUEVO]` Crear rol nuevo (nombre libre + capacidad), renombrar, borrar (con aviso si tiene esfuerzo asignado). Starter team de 4 roles editable. (US-034) |
+| SCR-013 | Vista de carga por rol | Web | SCR-001 | "Role load ÷ people": suma del esfuerzo por rol / gente. Resalta el cuello de botella. En vivo. (US-012) |
+| SCR-032 | Selector de esfuerzo (escala de días) | Web | SCR-030 | Escala acotada: 1d · 2d · 3d · 1sem · 10d · 2sem · 3sem · 4sem. Lista editable. (US-009, US-028) |
+| SCR-033 | Config — escala y conversión | Web | SCR-001 | Editar los pasos de la escala y la constante "días por semana" (default 5). Recalcula toda la agenda. (US-028) |
+
+## Bloque D — Dependencias, milestones, calendario
+
+| ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
+|---|---|---|---|---|
+| SCR-014 | Historia — declarar dependencia | Web | SCR-008 | Selector de dependencia hacia otra historia. Impide ciclos. Distingue interna (mismo epic) de cruzada. (US-013) |
+| SCR-015 | Timeline — dependencias y reordenamiento | Web | SCR-002 | Dependencias cruzadas como conexiones. Reordenar epics sin dependencia dura; si rompe una real, la tool frena y explica. (US-014) |
+| SCR-016 | Milestone — crear | Web | SCR-001 | Modal: nombre, fecha target, selección de historias de cualquier epic. Muestra qué historias lo componen. (US-015) |
+| SCR-017 | Milestone — target vs forecast | Web | SCR-002 | Marcador con target fijo y forecast calculado. Se marca "en riesgo" si forecast > target, con la brecha. (US-016) |
+| SCR-035 | Config — fecha de inicio y calendario | Web | SCR-001 | Fecha de inicio configurable y lista editable de feriados (hoy US). Timeline en días hábiles. `[BACKLOG: selector de país]` (US-029) |
+| SCR-036 | Timeline — días hábiles y feriados | Web | SCR-002 | Eje en días hábiles: fines de semana y feriados marcados (feriado nombrado). Fechas reales de calendario. (US-029) |
+
+## Bloque E — Scope, tags, MVP
+
+| ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
+|---|---|---|---|---|
+| SCR-018 | Profundidad MVP / Full | Web | SCR-001 | Toggle MVP/Full por historia. El esfuerzo se ajusta por el % de MVP de esa pieza; recalcula; muestra nota de trade-off. (US-017) |
+| SCR-019 | Toggle de tags | Web | SCR-001 | Toggles de los tags definidos por el usuario. Apagar uno **saca del roadmap** las historias que lo llevan (filtra Árbol + Timeline, recalcula). Muestra `SCOPE %`. (US-018) |
+| SCR-034 | Gestionar tags | Web | SCR-001 | Crear tag (nombre libre), activar/desactivar, editar, eliminar (con aviso si está en uso). Lista editable. (US-018) |
+
+## Bloque F — Notas, escenarios, fit, reset
+
+| ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
+|---|---|---|---|---|
+| SCR-020 | Notas / Assumptions — secciones libres | Web | SCR-001 | Tab de notas. Crear secciones con nombre libre; agregar/editar/borrar notas dentro de cada una. Por roadmap, persistido. (US-019) |
+| SCR-022 | Comparador de escenarios A/B | Web | SCR-001 | Guardar el estado como Escenario A o B y verlos lado a lado con milestones y fechas. Sin "ganador". (US-021) |
+| SCR-023 | Fit por objetivo | Web | SCR-001 | Selector de objetivo (velocidad / cobertura / derisking). Muestra el fit del roadmap con la fórmula a la vista. (US-022) |
+| SCR-024 | Reset del roadmap | Web | SCR-001 | "Reset" con confirmación: el roadmap vuelve a su estado inicial vacío (starter team). No afecta a otros roadmaps. (US-023) |
+
+## Bloque G — Agregación (display)
+
+| ID | Nombre | Plataforma | Clave Foránea | Detalle visual |
+|---|---|---|---|---|
+| SCR-028 | Agregación de estimaciones (display) | Web | SCR-001 | En cada nivel (epic y componente): esfuerzo total (suma) y duración, con desglose por rol. Distingue esfuerzo de duración. (US-026) |
+| SCR-029 | Estimación sugerida (placeholder) | Web | SCR-008 | Historia sin estimar muestra valor sugerido (promedio del epic) marcado "estimado automáticamente". (US-027) |
+
+---
+
+> ### Pantallas retiradas respecto de la versión case-study
+> - **SCR-020 viejo (panel de supuestos y datasets climáticos):** reemplazado por SCR-020 nuevo (notas libres). Sin datasets pre-cargados de dominio.
+> - **SCR-021 (supuestos locales en la historia):** absorbido por notas libres. `[VERIFICAR]`
+> - **SCR-025 (aviso de restaurar sesión):** ya no aplica — la persistencia multi-roadmap carga todo directo desde la Home.
+> - **SCR-026 / SCR-027 (exportar roadmap / documento PDF):** **no construidos.** Movidos a `backlog.md`.
+> - Toda referencia a datasets climáticos, amenazas heat/flood/energy y personas de dominio se eliminó; el filtrado por scope es ahora genérico vía tags.

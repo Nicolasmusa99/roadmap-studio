@@ -1,58 +1,86 @@
 # Design Tokens — Roadmap Studio
 
-**Dirección:** *green-phosphor HUD* — arcade sobrio. Toma el ADN del portfolio arcade de Nicolás
-(Marvel vs Capcom: stage select, barras de stat, HUD) y lo ejecuta minimalista y profesional.
-El **verde de Open Earth Foundation** es también el **verde-fósforo del CRT** viejo: un mismo acento
-sirve al brand climático y al guiño arcade. Esa es la decisión que unifica todo.
+> **Nota de evolución.** La versión case-study proponía una dirección "green-phosphor HUD" sobre base
+> clara. La herramienta actual usa un **tema oscuro con identidad propia** ("villano elegante",
+> inspiración Venom + Dr. Doom): sobrio, minimalista, con un guiño arcade en la tipografía y no en el
+> color. Este documento describe esa dirección. Los valores exactos deben confirmarse contra el
+> código — están marcados `[VERIFICAR]`.
 
-Regla de oro: el arcade se siente en el **tipo** y la **estructura**, no en un skin neón.
-Un solo acento. Un solo flourish HUD. Todo lo demás, quieto.
+## Dirección estética
 
-## Paleta (CSS variables — base clara, sobria)
+Oscuro, sobrio, minimalista. Villano elegante, no superhéroe brillante. La restricción es la
+identidad: un fondo casi negro, un solo acento verde apagado, detalles en acero frío, y el guiño
+"arcade noventoso" viviendo en el **tipo** y los **detalles**, nunca en un skin neón.
+
+Regla de oro: el arcade se siente en la tipografía y la estructura. Un solo acento. Sin colores
+chillones, sin parpadeos, sin personajes.
+
+## Paleta `[VERIFICAR valores exactos contra el CSS del código]`
+
+Dirección de la paleta (los hex son orientativos; tomar los reales del código):
 
 ```css
 :root{
-  /* Acento — verde OpenEarth + guiño CRT phosphor */
-  --oe-green:#1E7A4D;
-  --oe-green-weak:#E4F0EA;
-  /* Neutros */
-  --ink:#14201C;      /* near-black cálido, undertone verde */
-  --bg:#F5F6F3;       /* base neutra */
-  --panel:#FFFFFF;
-  --line:#E2E6E0;
-  --muted:#6B7671;
-  /* Señales (sobrias) */
-  --ok:#1E7A4D;       /* en fecha */
-  --warn:#B5551B;     /* en riesgo (ámbar apagado, no rojo neón) */
-  /* Tonos de componente (quietos, desaturados) */
-  --c-df:#6B7A72;  --c-vis:#2E6E6A;  --c-ri:#1E7A4D;  --c-ai:#5A6E52;
+  /* Base oscura */
+  --bg:#0E1512;          /* fondo casi negro, undertone verde/frío */
+  --panel:#141D19;       /* superficies gris carbón */
+  --line:#243029;        /* bordes tenues */
+  --ink:#E6EDE8;         /* texto: blanco filoso / gris muy claro */
+  --muted:#8A968F;       /* texto secundario, con contraste suficiente */
+
+  /* Acento — verde apagado (no neón) */
+  --accent:#1E7A4D;      /* verde Doom/OpenEarth apagado */
+  --accent-weak:#16241D;
+
+  /* Detalles */
+  --steel:#9AA7A0;       /* acero frío para detalles secundarios */
+
+  /* Señales de estado (versiones apagadas, NO semáforo brillante) */
+  --ok:#1E7A4D;          /* en fecha / on-track */
+  --warn:#B5551B;        /* en riesgo (ámbar apagado) */
+  --danger:#8A3B2E;      /* bloqueado / error (rojo apagado) */
 }
 ```
 
-Variante **dark "terminal"** (opcional, swap de variables): `--bg:#0E1512; --panel:#141D19;
---ink:#E6EDE8; --line:#243029;` manteniendo `--oe-green` como acento. Es la más arcade; para una
-demo en proyector, la base clara es más legible. Elegir una.
+> Si el código define los tokens de otra forma (nombres, valores), este archivo debe alinearse a esos.
+> Lo que NO se negocia: contraste legible sobre el fondo oscuro, y que los estados con significado
+> (on-track / en riesgo / bloqueado) se distingan claramente entre sí y del fondo.
 
 ## Tipografía
 
-- **Display / HUD / números:** `JetBrains Mono` (o IBM Plex Mono). Para labels, IDs, métricas,
-  headers de stage y readouts tipo score. Números siempre `font-variant-numeric: tabular-nums`.
-- **Prosa / UI general:** `Inter` (o system sans). Para texto de historias, descripciones.
-- Nada de pixel-fonts: se lee como juguete. La mono refinada da "precisión/ingeniería" + arcade.
+- **Display / HUD / números:** fuente monoespaciada (JetBrains Mono / IBM Plex Mono `[VERIFICAR]`)
+  para labels, IDs, métricas, headers de stage/epic y readouts tipo score. Números con
+  `font-variant-numeric: tabular-nums`.
+- **Prosa / UI general:** sans (Inter / system) para texto de historias y descripciones.
+- Nada de pixel-fonts: la mono refinada da "precisión/ingeniería" + guiño arcade sin leerse a juguete.
 
-## Metáfora arcade → roadmap (estructura que SIGNIFICA, no decora)
+## Metáfora arcade → roadmap (estructura que significa, no decora)
 
-| Arcade (portfolio) | Roadmap Studio |
+| Arcade | Roadmap Studio |
 |---|---|
-| STAGE 01, 02, 03 (stage select) | Epics (eyebrow "STAGE 0X — DATA FOUNDATION") |
+| STAGE 01, 02, 03 | Epics (eyebrow "STAGE 0X — <NOMBRE>") |
 | Checkpoints | Milestones (target vs forecast) |
-| Barras de stat (PRODUCT 95, DATA 85) | Carga por rol / barras de esfuerzo |
-| Score / HI-SCORE counter | Readout de esfuerzo total y semana de fin |
+| Barras de stat | Carga por rol / barras de esfuerzo |
+| Score / HI-SCORE | Readout de esfuerzo total y semana de fin |
 | Level progression | Timeline (Gantt) |
-| INSERT COIN / PRESS START | Estados vacíos ("crear la primera historia") |
+| INSERT COIN / PRESS START | Estados vacíos ("crear la primera historia" / Home sin roadmaps) |
 
-## Elemento firma (la única cosa audaz, en un solo lugar)
+## Reglas de legibilidad (innegociables)
 
-Un guiño HUD/CRT mínimo: eyebrows tipo `STAGE 0X —` en mono, los readouts de métrica como contador
-de score, y una textura de **scanline hairline** apenas perceptible sobre el header o el timeline.
-Restraint total: sin fight screen, sin personajes, sin parpadeos, sin neón.
+- Contraste suficiente para leer sin esfuerzo sobre el fondo oscuro; nada de gris oscuro sobre negro.
+- Los estados con significado (on-track, en riesgo, bloqueado, target vs forecast, chips de rol y de
+  tag, badge de degradación) deben distinguirse claramente. Si un estado comunica por color,
+  mantener esa semántica legible en dark mode.
+- El timeline/Gantt es la zona más delicada: barras, línea de forecast, zona at-risk y gridlines
+  deben verse claras sobre fondo oscuro.
+
+## Superficies específicas a cubrir por el tema
+
+Home (cards de roadmap + dashboard), workspace (Árbol, Timeline), panel derecho, modales, tooltips,
+selector de roadmap, y la pantalla de aviso "mejor en desktop" para mobile `[VERIFICAR si ya existe]`.
+
+## Elemento firma (restraint total)
+
+Un guiño HUD/CRT mínimo en un solo lugar: eyebrows `STAGE 0X —` en mono, readouts de métrica como
+contador de score, y a lo sumo una scanline hairline apenas perceptible sobre header o timeline.
+Sin fight screen, sin personajes, sin neón.
