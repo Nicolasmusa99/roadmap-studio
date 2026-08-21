@@ -165,17 +165,20 @@ export interface NewStoryInput {
   labels: string[]
 }
 
-// ─── Assumptions & open questions ──────────────────────────────────────────────
+// ─── Notes / Assumptions ─────────────────────────────────────────────────────
 
-// "Nada asumido" (invariant #15): the assumptions the roadmap rests on are made
-// explicit and editable in the tool, not left in the PM's head. category groups
-// them; kind separates a declared assumption from a question for the board.
-export type AssumptionKind = 'assumption' | 'question'
+// Free-form sections with notes (invariant #15: everything is declared and
+// editable, not locked into fixed Lumeria-era categories).
+// Sections are user-named containers; notes are plain text entries inside them.
+
+export interface AssumptionSection {
+  id: string
+  name: string
+}
 
 export interface Assumption {
   id: string
-  category: string // e.g. 'Datasets', 'Mitigation', 'Milestones & dates', 'Open questions'
-  kind: AssumptionKind
+  sectionId: string  // references AssumptionSection.id
   text: string
 }
 
@@ -187,6 +190,7 @@ export interface AppState {
   stories: Story[]
   milestones: Milestone[]
   datasets: Dataset[]
+  assumptionSections: AssumptionSection[]
   assumptions: Assumption[]
   config: AppConfig
 }

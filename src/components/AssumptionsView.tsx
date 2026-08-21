@@ -1,87 +1,190 @@
-import { useMemo } from 'react'
-import type { Assumption, AssumptionKind } from '../lib/types.ts'
+import { useState, useRef, useEffect } from 'react'
+import type { AssumptionSection, Assumption } from '../lib/types'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
 interface Props {
-  assumptions: Assumption[]
-  onAdd: (category: string, kind: AssumptionKind) => string
-  onUpdate: (id: string, text: string) => void
-  onDelete: (id: string) => void
+  sections: AssumptionSection[]
+  notes: Assumption[]
+  onAddSection: (name: string) => string
+  onRenameSection: (sectionId: string, name: string) => void
+  onDeleteSection: (sectionId: string) => void
+  onAddNote: (sectionId: string) => string
+  onUpdateNote: (id: string, text: string) => void
+  onDeleteNote: (id: string) => void
 }
 
-// Fixed display order for the seeded categories; any PM-added category falls in
-// after these, in first-seen order. Each category renders as a card.
-const CATEGORY_ORDER = ['Datasets', 'Mitigation', 'Milestones & dates', 'Open questions']
-
-// "Nada asumido" (invariant #15) made a first-class, editable surface. Assumptions
-// the roadmap rests on and the questions we'd put to the board — visible in-tool,
-// not just in the PM's head. Everything here is add/edit/delete live.
-export default function AssumptionsView({ assumptions, onAdd, onUpdate, onDelete }: Props) {
+export default function AssumptionsView({
+  sections,
+  notes,
+  onAddSection,
+  onRenameSection,
+  onDeleteSection,
+  onAddNote,
+  onUpdateNote,
+  onDeleteNote,
+}: Props) {
   const { t } = useI18n()
+  const [addingSection, setAddingSection] = useState(false)
+  const [newSectionName, setNewSectionName] = useState('')
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const newSectionInputRef = useRef<HTMLInputElement>(null)
+  const renameInputRef = useRef<HTMLInputElement>(null)
 
-  // Group by category, preserving CATEGORY_ORDER then first-seen order.
-  const groups = useMemo(() => {
-    const byCat = new Map<string, Assumption[]>()
-    for (const a of assumptions) {
-      if (!byCat.has(a.category)) byCat.set(a.category, [])
-      byCat.get(a.category)!.push(a)
+  useEffect(() => {
+    if (addingSection) newSectionInputRef.current?.focus()
+  }, [addingSection])
+
+  useEffect(() => {
+    if (renamingId) renameInputRef.current?.focus()
+  }, [renamingId])
+
+  function commitNewSection() {
+    const name = newSectionName.trim()
+    if (name) {
+      onAddSection(name)
     }
-    const cats = [...byCat.keys()].sort((a, b) => {
-      const ia = CATEGORY_ORDER.indexOf(a)
-      const ib = CATEGORY_ORDER.indexOf(b)
-      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib)
-    })
-    return cats.map(cat => ({ cat, items: byCat.get(cat)! }))
-  }, [assumptions])
+    setNewSectionName('')
+    setAddingSection(false)
+  }
+
+  function commitRename() {
+    if (renamingId) {
+      const name = renameValue.trim()
+      if (name) onRenameSection(renamingId, name)
+    }
+    setRenamingId(null)
+    setRenameValue('')
+  }
+
+  function startRename(section: AssumptionSection) {
+    setRenamingId(section.id)
+    setRenameValue(section.name)
+  }
+
+  function handleDeleteSection(section: AssumptionSection) {
+    const sectionNotes = notes.filter(n => n.sectionId === section.id)
+    const msg = t('asmDeleteSectionConfirm')
+      .replace('{name}', section.name)
+      .replace('{n}', String(sectionNotes.length))
+    if (window.confirm(msg)) {
+      onDeleteSection(section.id)
+    }
+  }
 
   return (
     <main className="assumptions-view" data-testid="assumptions-view">
-      <div className="asm-intro">
-        <div className="asm-intro-title">{t('asmTitle')}</div>
-        <div className="asm-intro-sub">{t('asmSubtitle')}</div>
+      <div className="asm-header">
+        <span className="asm-title">{t('asmTitle')}</span>
+        <button
+          className="asm-new-section-btn"
+          data-testid="asm-new-section"
+          onClick={() => setAddingSection(true)}
+        >
+          {t('asmNewSection')}
+        </button>
       </div>
 
-      {groups.map(({ cat, items }) => {
-        // "Open questions" is a question category; everything else holds assumptions.
-        const kind: AssumptionKind = cat === 'Open questions' ? 'question' : 'assumption'
+      {addingSection && (
+        <div className="asm-new-section-form">
+          <input
+            ref={newSectionInputRef}
+            className="asm-section-input"
+            value={newSectionName}
+            placeholder={t('asmSectionPlaceholder')}
+            onChange={e => setNewSectionName(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') commitNewSection()
+              if (e.key === 'Escape') { setNewSectionName(''); setAddingSection(false) }
+            }}
+            onBlur={commitNewSection}
+          />
+        </div>
+      )}
+
+      {sections.length === 0 && !addingSection && (
+        <div className="asm-empty" data-testid="asm-empty">
+          <div className="asm-empty-msg">{t('asmNoSections')}</div>
+          <div className="asm-empty-hint">{t('asmNoSectionsHint')}</div>
+        </div>
+      )}
+
+      {sections.map(section => {
+        const sectionNotes = notes.filter(n => n.sectionId === section.id)
         return (
-          <section key={cat} className="asm-card" data-testid={`asm-card-${cat}`}>
+          <section key={section.id} className="asm-card" data-testid={`asm-card-${section.id}`}>
             <div className="asm-card-head">
-              <span className="asm-card-title">{cat}</span>
-              <span className="asm-card-count">{items.length}</span>
+              {renamingId === section.id ? (
+                <input
+                  ref={renameInputRef}
+                  className="asm-section-rename-input"
+                  value={renameValue}
+                  onChange={e => setRenameValue(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') commitRename()
+                    if (e.key === 'Escape') { setRenamingId(null); setRenameValue('') }
+                  }}
+                  onBlur={commitRename}
+                  aria-label={t('asmRenameSection')}
+                />
+              ) : (
+                <span
+                  className="asm-card-title"
+                  onDoubleClick={() => startRename(section)}
+                  title={t('asmRenameSection')}
+                >
+                  {section.name}
+                </span>
+              )}
+              <span className="asm-card-count">{sectionNotes.length}</span>
+              <div className="asm-card-actions">
+                <button
+                  className="asm-rename-btn"
+                  title={t('asmRenameSection')}
+                  onClick={() => startRename(section)}
+                >
+                  ✎
+                </button>
+                <button
+                  className="asm-delete-section-btn"
+                  title={t('asmDeleteSection')}
+                  onClick={() => handleDeleteSection(section)}
+                >
+                  ×
+                </button>
+              </div>
             </div>
+
             <ul className="asm-list">
-              {items.map(a => (
-                <li key={a.id} className="asm-row" data-testid={`asm-row-${a.id}`}>
-                  <span className={`asm-marker asm-marker--${a.kind}`} aria-hidden="true">
-                    {a.kind === 'question' ? '?' : '›'}
-                  </span>
+              {sectionNotes.map(note => (
+                <li key={note.id} className="asm-row" data-testid={`asm-row-${note.id}`}>
                   <textarea
                     className="asm-input"
-                    data-testid={`asm-input-${a.id}`}
-                    value={a.text}
+                    data-testid={`asm-input-${note.id}`}
+                    value={note.text}
                     rows={2}
-                    placeholder={kind === 'question' ? t('asmQuestionPlaceholder') : t('asmAssumptionPlaceholder')}
-                    onChange={e => onUpdate(a.id, e.target.value)}
+                    placeholder={t('asmNotePlaceholder')}
+                    onChange={e => onUpdateNote(note.id, e.target.value)}
                   />
                   <button
                     className="asm-del"
-                    data-testid={`asm-del-${a.id}`}
+                    data-testid={`asm-del-${note.id}`}
                     title={t('asmDelete')}
                     aria-label={t('asmDelete')}
-                    onClick={() => onDelete(a.id)}
+                    onClick={() => onDeleteNote(note.id)}
                   >
                     ×
                   </button>
                 </li>
               ))}
             </ul>
+
             <button
               className="asm-add"
-              data-testid={`asm-add-${cat}`}
-              onClick={() => onAdd(cat, kind)}
+              data-testid={`asm-add-note-${section.id}`}
+              onClick={() => onAddNote(section.id)}
             >
-              + {kind === 'question' ? t('asmAddQuestion') : t('asmAddAssumption')}
+              {t('asmAddNote')}
             </button>
           </section>
         )

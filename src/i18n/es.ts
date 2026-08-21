@@ -4,7 +4,25 @@ import type { en } from './en'
 export const es: typeof en = {
   // ── TopBar ───────────────────────────────────────────────────────────────
   reset: 'REINICIAR',
-  resetConfirm: '¿Reiniciar al baseline de fábrica?',
+  resetConfirm: '¿Reiniciar este roadmap a su estado inicial? Se borran todos los stages, historias y configuración. Los otros roadmaps no se ven afectados.',
+  backHome: '← INICIO',
+  renameRoadmapAria: 'Renombrar roadmap',
+  switchRoadmapAria: 'Cambiar roadmap',
+  storageErrorQuota: 'Almacenamiento lleno — el último guardado puede haber fallado. Borrá roadmaps no usados.',
+  storageErrorUnavailable: 'localStorage no disponible — los cambios no se están guardando.',
+
+  // ── Pantalla home ─────────────────────────────────────────────────────────
+  homeTitle: 'MIS ROADMAPS',
+  homeEmpty: 'No hay roadmaps todavía.',
+  homeEmptyHint: 'Creá uno para empezar a planificar.',
+  homeCreate: '+ NUEVO ROADMAP',
+  homeNewPlaceholder: 'Nombre del roadmap…',
+  homeOpen: 'Abrir',
+  homeRename: 'Renombrar',
+  homeDelete: 'Eliminar',
+  homeDeleteConfirm: '¿Eliminar "{name}"? Se borran todos sus datos de forma permanente. Esta acción no se puede deshacer.',
+  homeLastEdited: 'Editado {date}',
+  homeNStories: '{n} historias',
   legendTitle: 'Notación',
   legendD: 'd — esfuerzo en días de ese rol (un input, elegido de la escala).',
   legendP: 'p — personas asignadas a ese rol (más gente = menos duración).',
@@ -23,6 +41,21 @@ export const es: typeof en = {
   removeRole: 'Quitar {name}',
   addRole: 'Agregar {name}',
   scopeReadout: 'SCOPE {pct}% · {inScope}/{total} historias',
+  // Role CRUD (Cambio 2 — roles dinámicos)
+  addRoleBtn: 'AGREGAR ROL',
+  newRolePlaceholder: 'Nombre del rol…',
+  renameRoleAria: 'Renombrar rol',
+  deleteRoleAria: 'Borrar rol {name}',
+  deleteRoleConfirm: '¿Borrar el rol "{name}"? No se puede deshacer.',
+  deleteRoleConfirmEffort: '¿Borrar el rol "{name}"? {n} historias le asignan effort ({ids}); ese effort se va a quitar para no dejar nada huérfano. No se puede deshacer.',
+  // Tag CRUD (Cambio 3 — tags libres reemplazan threats fijas)
+  tags: 'TAGS',
+  addTagBtn: 'AGREGAR TAG',
+  newTagPlaceholder: 'Nombre del tag…',
+  deleteTagAria: 'Borrar tag {name}',
+  deleteTagConfirm: '¿Borrar el tag "{name}"? No se puede deshacer.',
+  deleteTagConfirmUsed: '¿Borrar el tag "{name}"? {n} historias llevan esta etiqueta ({ids}); se va a quitar de ellas. No se puede deshacer.',
+  sectionTags: 'TAGS',
 
   // ── View toggle / Timeline (US-002) ──────────────────────────────────────
   viewToggleAria: 'Cambiar vista',
@@ -32,13 +65,17 @@ export const es: typeof en = {
   tlWeeks: 'SEMANAS',
   tlEmpty: 'Sin historias agendadas',
 
-  // ── Assumptions & open questions (invariant #15) ─────────────────────────
-  asmTitle: 'SUPUESTOS Y PREGUNTAS ABIERTAS',
-  asmSubtitle: 'En qué se apoya este roadmap y qué le preguntaríamos al board. Todo acá es editable.',
-  asmAddAssumption: 'Agregar supuesto',
-  asmAddQuestion: 'Agregar pregunta',
-  asmAssumptionPlaceholder: 'Declará un supuesto…',
-  asmQuestionPlaceholder: '¿Qué le preguntarías al board?',
+  // ── Notas y supuestos (invariant #15 — secciones libres) ──────────────
+  asmTitle: 'NOTAS Y SUPUESTOS',
+  asmNoSections: 'Aún no hay secciones.',
+  asmNoSectionsHint: 'Creá una sección para empezar a tomar notas.',
+  asmNewSection: '+ NUEVA SECCIÓN',
+  asmSectionPlaceholder: 'Nombre de sección…',
+  asmRenameSection: 'Renombrar sección',
+  asmDeleteSection: 'Eliminar sección',
+  asmDeleteSectionConfirm: '¿Eliminar la sección "{name}" y sus {n} notas? Esto no se puede deshacer.',
+  asmAddNote: '+ Agregar nota',
+  asmNotePlaceholder: 'Escribe una nota…',
   asmDelete: 'Eliminar',
 
   // ── Milestones (US-015 / US-016) ─────────────────────────────────────────

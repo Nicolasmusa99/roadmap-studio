@@ -3,7 +3,25 @@
 export const en = {
   // ── TopBar ───────────────────────────────────────────────────────────────
   reset: 'RESET',
-  resetConfirm: 'Reset to factory baseline?',
+  resetConfirm: 'Reset this roadmap to its initial state? All stages, stories, and settings will be cleared. Other roadmaps are not affected.',
+  backHome: '← HOME',
+  renameRoadmapAria: 'Rename roadmap',
+  switchRoadmapAria: 'Switch roadmap',
+  storageErrorQuota: 'Storage full — last save may have failed. Delete unused roadmaps.',
+  storageErrorUnavailable: 'Local storage unavailable — changes are not being saved.',
+
+  // ── Home screen ───────────────────────────────────────────────────────────
+  homeTitle: 'MY ROADMAPS',
+  homeEmpty: 'No roadmaps yet.',
+  homeEmptyHint: 'Create one to start planning.',
+  homeCreate: '+ NEW ROADMAP',
+  homeNewPlaceholder: 'Roadmap name…',
+  homeOpen: 'Open',
+  homeRename: 'Rename',
+  homeDelete: 'Delete',
+  homeDeleteConfirm: 'Delete "{name}"? All its data will be permanently removed. This cannot be undone.',
+  homeLastEdited: 'Edited {date}',
+  homeNStories: '{n} stories',
   legendTitle: 'Notation',
   legendD: 'd — effort in days for that role (an input, chosen from the scale).',
   legendP: 'p — people assigned to that role (more people = shorter duration).',
@@ -22,6 +40,21 @@ export const en = {
   removeRole: 'Remove {name}',
   addRole: 'Add {name}',
   scopeReadout: 'SCOPE {pct}% · {inScope}/{total} stories',
+  // Role CRUD (Change 2 — dynamic roles)
+  addRoleBtn: 'ADD ROLE',
+  newRolePlaceholder: 'Role name…',
+  renameRoleAria: 'Rename role',
+  deleteRoleAria: 'Delete role {name}',
+  deleteRoleConfirm: 'Delete role "{name}"? This cannot be undone.',
+  deleteRoleConfirmEffort: 'Delete role "{name}"? {n} stories assign effort to it ({ids}); that effort will be removed so nothing is left orphaned. This cannot be undone.',
+  // Tag CRUD (Change 3 — free tags replace fixed threats)
+  tags: 'TAGS',
+  addTagBtn: 'ADD TAG',
+  newTagPlaceholder: 'Tag name…',
+  deleteTagAria: 'Delete tag {name}',
+  deleteTagConfirm: 'Delete tag "{name}"? This cannot be undone.',
+  deleteTagConfirmUsed: 'Delete tag "{name}"? {n} stories carry this label ({ids}); it will be removed from them. This cannot be undone.',
+  sectionTags: 'TAGS',
 
   // ── View toggle / Timeline (US-002) ──────────────────────────────────────
   viewToggleAria: 'Switch view',
@@ -31,13 +64,17 @@ export const en = {
   tlWeeks: 'WEEKS',
   tlEmpty: 'No scheduled stories',
 
-  // ── Assumptions & open questions (invariant #15) ─────────────────────────
-  asmTitle: 'ASSUMPTIONS & OPEN QUESTIONS',
-  asmSubtitle: 'What this roadmap rests on, and what we’d ask the board. Everything here is editable.',
-  asmAddAssumption: 'Add assumption',
-  asmAddQuestion: 'Add question',
-  asmAssumptionPlaceholder: 'State an assumption…',
-  asmQuestionPlaceholder: 'What would you ask the board?',
+  // ── Notes & Assumptions tab (invariant #15 — free sections) ─────────────
+  asmTitle: 'NOTES & ASSUMPTIONS',
+  asmNoSections: 'No sections yet.',
+  asmNoSectionsHint: 'Create a section to start taking notes.',
+  asmNewSection: '+ NEW SECTION',
+  asmSectionPlaceholder: 'Section name…',
+  asmRenameSection: 'Rename section',
+  asmDeleteSection: 'Delete section',
+  asmDeleteSectionConfirm: 'Delete section "{name}" and its {n} notes? This cannot be undone.',
+  asmAddNote: '+ Add note',
+  asmNotePlaceholder: 'Write a note…',
   asmDelete: 'Delete',
 
   // ── Milestones (US-015 / US-016) ─────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import type { AppState, ScheduledStory, Story, NewStoryInput, AssumptionKind } from '../lib/types'
+import type { AppState, ScheduledStory, Story, NewStoryInput } from '../lib/types'
 import { createInitialState } from '../data/baseline'
 import { schedule } from '../lib/scheduler'
 import { storiesInScope } from '../lib/threats'
@@ -7,13 +7,18 @@ import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 import { clampMvpPct } from '../lib/validation'
 import { applyEstimationAction } from '../lib/estimation'
-import { removeStoryFromState, removeEpicFromState } from '../lib/mutations'
+import { removeStoryFromState, removeEpicFromState, removeRoleFromState, removeTagFromState, removeSectionFromState } from '../lib/mutations'
 
 export interface RoadmapState {
   state: AppState
   scheduledStories: ScheduledStory[]
   milestoneForecasts: Map<string, MilestoneForecast>
   setTeamPeople: (roleId: string, people: number) => void
+  addRole: (name: string) => string
+  renameRole: (roleId: string, name: string) => void
+  removeRole: (roleId: string) => void
+  addTag: (name: string) => string
+  removeTag: (tagId: string) => void
   toggleRiskLayer: (layerId: string) => void
   toggleMvpStory: (storyId: string) => void
   updateStory: (storyId: string, patch: Partial<Story>) => void
@@ -25,14 +30,17 @@ export interface RoadmapState {
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   addMilestone: (name: string, target: string, storyIds: string[]) => string
-  addAssumption: (category: string, kind: AssumptionKind) => string
-  updateAssumption: (id: string, text: string) => void
-  deleteAssumption: (id: string) => void
+  addSection: (name: string) => string
+  renameSection: (sectionId: string, name: string) => void
+  deleteSection: (sectionId: string) => void
+  addNote: (sectionId: string) => string
+  updateNote: (id: string, text: string) => void
+  deleteNote: (id: string) => void
   reset: () => void
 }
 
-export function useRoadmapState(): RoadmapState {
-  const [state, setState] = useState<AppState>(createInitialState)
+export function useRoadmapState(initialState?: AppState): RoadmapState {
+  const [state, setState] = useState<AppState>(() => initialState ?? createInitialState())
 
   // Threat scoping happens here, upstream of the scheduler: stories carrying an
   // inactive threat's label are filtered out entirely, so the schedule (and every
@@ -68,6 +76,56 @@ export function useRoadmapState(): RoadmapState {
         ),
       },
     }))
+  }, [])
+
+  // Add a role with a starter capacity of 1 person so it can schedule work
+  // immediately. Returns the generated id. Roles are never protected — the whole
+  // team is user-defined (the four defaults are just a convenient starting point).
+  const addRole = useCallback((name: string): string => {
+    const id = `role-user-${Date.now()}`
+    setState(s => ({
+      ...s,
+      config: {
+        ...s.config,
+        teamRoles: [...s.config.teamRoles, { id, name: name.trim(), people: 1 }],
+      },
+    }))
+    return id
+  }, [])
+
+  const renameRole = useCallback((roleId: string, name: string) => {
+    setState(s => ({
+      ...s,
+      config: {
+        ...s.config,
+        teamRoles: s.config.teamRoles.map(r =>
+          r.id === roleId ? { ...r, name: name.trim() } : r,
+        ),
+      },
+    }))
+  }, [])
+
+  // Deleting a role also strips its effort from every story (removeRoleFromState),
+  // so no story is left pointing at a role that no longer exists. The App-level
+  // handler warns first when stories depend on it (storiesUsingRole).
+  const removeRole = useCallback((roleId: string) => {
+    setState(s => removeRoleFromState(s, roleId))
+  }, [])
+
+  const addTag = useCallback((name: string): string => {
+    const id = `tag-user-${Date.now()}`
+    setState(s => ({
+      ...s,
+      config: {
+        ...s.config,
+        riskLayers: [...s.config.riskLayers, { id, name: name.trim(), active: true }],
+      },
+    }))
+    return id
+  }, [])
+
+  const removeTag = useCallback((tagId: string) => {
+    setState(s => removeTagFromState(s, tagId))
   }, [])
 
   const toggleRiskLayer = useCallback((layerId: string) => {
@@ -246,24 +304,46 @@ export function useRoadmapState(): RoadmapState {
     return id
   }, [])
 
-  // ── Assumptions & open questions (invariant #15) ────────────────────────────
-  const addAssumption = useCallback((category: string, kind: AssumptionKind): string => {
-    const id = `a-user-${Date.now()}`
+  // ── Notes / Assumptions (invariant #15: free-form, user-defined sections) ───
+  const addSection = useCallback((name: string): string => {
+    const id = `sec-user-${Date.now()}`
     setState(s => ({
       ...s,
-      assumptions: [...s.assumptions, { id, category, kind, text: '' }],
+      assumptionSections: [...s.assumptionSections, { id, name: name.trim() }],
     }))
     return id
   }, [])
 
-  const updateAssumption = useCallback((id: string, text: string) => {
+  const renameSection = useCallback((sectionId: string, name: string) => {
+    setState(s => ({
+      ...s,
+      assumptionSections: s.assumptionSections.map(sec =>
+        sec.id === sectionId ? { ...sec, name: name.trim() || sec.name } : sec,
+      ),
+    }))
+  }, [])
+
+  const deleteSection = useCallback((sectionId: string) => {
+    setState(s => removeSectionFromState(s, sectionId))
+  }, [])
+
+  const addNote = useCallback((sectionId: string): string => {
+    const id = `note-user-${Date.now()}`
+    setState(s => ({
+      ...s,
+      assumptions: [...s.assumptions, { id, sectionId, text: '' }],
+    }))
+    return id
+  }, [])
+
+  const updateNote = useCallback((id: string, text: string) => {
     setState(s => ({
       ...s,
       assumptions: s.assumptions.map(a => (a.id === id ? { ...a, text } : a)),
     }))
   }, [])
 
-  const deleteAssumption = useCallback((id: string) => {
+  const deleteNote = useCallback((id: string) => {
     setState(s => ({ ...s, assumptions: s.assumptions.filter(a => a.id !== id) }))
   }, [])
 
@@ -276,6 +356,11 @@ export function useRoadmapState(): RoadmapState {
     scheduledStories,
     milestoneForecasts,
     setTeamPeople,
+    addRole,
+    renameRole,
+    removeRole,
+    addTag,
+    removeTag,
     toggleRiskLayer,
     toggleMvpStory,
     updateStory,
@@ -287,9 +372,12 @@ export function useRoadmapState(): RoadmapState {
     reorderEpic,
     reorderStory,
     addMilestone,
-    addAssumption,
-    updateAssumption,
-    deleteAssumption,
+    addSection,
+    renameSection,
+    deleteSection,
+    addNote,
+    updateNote,
+    deleteNote,
     reset,
   }
 }

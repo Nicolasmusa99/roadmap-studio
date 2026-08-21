@@ -94,6 +94,11 @@ export default function TreeView({
 
   const dpw = state.config.calendarConfig.daysPerWeek
 
+  const roleNameMap = useMemo(
+    () => new Map(state.config.teamRoles.map(r => [r.id, r.name])),
+    [state.config.teamRoles],
+  )
+
   // Only stories in scope for the active threats are shown/aggregated here — an
   // unchecked threat drops its stories from the tree and shrinks its epic. (#12)
   const scopedStories = useMemo(
@@ -217,7 +222,7 @@ export default function TreeView({
         {rationaleOpen && (
           <div className="tree-rationale-body">
             <p>
-              The order is set by dependencies: scoring needs the map, mitigation needs the scores.
+              The order is set by dependencies: a story is scheduled after everything it depends on.
             </p>
           </div>
         )}
@@ -409,14 +414,18 @@ export default function TreeView({
                                   <span className="story-id">{story.id}</span>
                                   <span className="story-title">{story.title}</span>
                                   <span className="story-chips">
-                                    {story.roleEfforts.map(re => (
-                                      <span
-                                        key={re.roleId}
-                                        className={CHIP_CLASS[re.roleId] ?? 'chip chip--default'}
-                                      >
-                                        {re.roleId.toUpperCase().slice(0, 4)} {re.days}d
-                                      </span>
-                                    ))}
+                                    {story.roleEfforts.map(re => {
+                                      const name = roleNameMap.get(re.roleId) ?? re.roleId
+                                      return (
+                                        <span
+                                          key={re.roleId}
+                                          className={CHIP_CLASS[re.roleId] ?? 'chip chip--default'}
+                                          title={name}
+                                        >
+                                          {name.toUpperCase().slice(0, 4)} {re.days}d
+                                        </span>
+                                      )
+                                    })}
                                   </span>
                                   {story.mvpEnabled && (
                                     <span className="story-badge story-badge--mvp">MVP</span>

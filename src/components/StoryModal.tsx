@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Epic, Story, TeamRole, EffortScaleStep, NewStoryInput } from '../lib/types.ts'
+import type { Epic, Story, TeamRole, EffortScaleStep, NewStoryInput, RiskLayer } from '../lib/types.ts'
 import { clampMvpPct } from '../lib/validation.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
@@ -7,6 +7,7 @@ interface Props {
   epicId: string
   epics: Epic[]
   teamRoles: TeamRole[]
+  riskLayers: RiskLayer[]
   effortScale: EffortScaleStep[]
   stories: Story[]
   initialFields?: Partial<NewStoryInput>
@@ -22,6 +23,7 @@ export default function StoryModal({
   epicId,
   epics,
   teamRoles,
+  riskLayers,
   effortScale,
   stories,
   initialFields,
@@ -43,9 +45,11 @@ export default function StoryModal({
   const [dependsOn, setDependsOn] = useState<Set<string>>(
     () => new Set(initialFields?.dependsOn ?? []),
   )
+  const [labels, setLabels] = useState<string[]>(() => initialFields?.labels ?? [])
 
   const assignedIds    = new Set(roleEfforts.map(re => re.roleId))
   const unassignedRoles = teamRoles.filter(r => !assignedIds.has(r.id))
+  const roleName = (id: string) => teamRoles.find(r => r.id === id)?.name ?? id
 
   function setEffort(roleId: string, days: number) {
     setRoleEfforts(prev => prev.map(re => re.roleId === roleId ? { ...re, days } : re))
@@ -56,6 +60,10 @@ export default function StoryModal({
   function removeRole(roleId: string) {
     setRoleEfforts(prev => prev.filter(re => re.roleId !== roleId))
   }
+  function toggleLabel(name: string) {
+    setLabels(prev => prev.includes(name) ? prev.filter(l => l !== name) : [...prev, name])
+  }
+
   function toggleDep(storyId: string) {
     setDependsOn(prev => {
       const next = new Set(prev)
@@ -77,7 +85,7 @@ export default function StoryModal({
       mvpPct:     clampMvpPct(mvpPct),
       mvpEnabled,
       dependsOn:  [...dependsOn],
-      labels:     initialFields?.labels ?? [],
+      labels,
     })
   }
 
@@ -147,7 +155,7 @@ export default function StoryModal({
 
         {roleEfforts.map(re => (
           <div key={re.roleId} className="rp-role-row" data-testid={`story-modal-role-${re.roleId}`}>
-            <span className="rp-role-tag">{re.roleId.toUpperCase()}</span>
+            <span className="rp-role-tag">{roleName(re.roleId).toUpperCase()}</span>
             <select
               className="rp-effort-select"
               data-testid={`story-modal-effort-${re.roleId}`}
@@ -178,7 +186,7 @@ export default function StoryModal({
                 data-testid={`story-modal-add-role-${r.id}`}
                 onClick={() => addRole(r.id)}
               >
-                + {r.id.toUpperCase()}
+                + {r.name}
               </button>
             ))}
           </div>
@@ -210,6 +218,29 @@ export default function StoryModal({
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-muted)' }}>%</span>
           </div>
         </div>
+
+        {/* Tags */}
+        {riskLayers.length > 0 && (
+          <>
+            <div className="modal-field-lbl" style={{ marginTop: 12 }}>{t('sectionTags')}</div>
+            <div className="rp-role-add-row" style={{ flexWrap: 'wrap', gap: 4 }}>
+              {riskLayers.map(tag => {
+                const active = labels.includes(tag.name)
+                return (
+                  <button
+                    key={tag.id}
+                    className="rp-role-add-btn"
+                    data-testid={`story-modal-tag-${tag.id}`}
+                    style={active ? { border: '1px solid var(--oe-green)', color: 'var(--oe-green)' } : undefined}
+                    onClick={() => toggleLabel(tag.name)}
+                  >
+                    {active ? '✓' : '+'} {tag.name}
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
 
         {/* Dependencies */}
         {stories.length > 0 && (

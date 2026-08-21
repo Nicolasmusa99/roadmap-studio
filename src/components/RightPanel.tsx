@@ -63,6 +63,7 @@ export default function RightPanel({
   const { t } = useI18n()
   const [mode, setMode] = useState<'read' | 'edit'>('read')
   const [draft, setDraft] = useState<Story | null>(null)
+  const roleName = (id: string) => teamRoles.find(r => r.id === id)?.name ?? id
 
   // Exit edit mode without saving whenever the selected story changes.
   useEffect(() => {
@@ -192,7 +193,7 @@ export default function RightPanel({
 
         {draft.roleEfforts.map(re => (
           <div key={re.roleId} className="rp-role-row" data-testid={`rp-role-row-${re.roleId}`}>
-            <span className="rp-role-tag">{re.roleId.toUpperCase()}</span>
+            <span className="rp-role-tag">{roleName(re.roleId).toUpperCase()}</span>
             <select
               className="rp-effort-select"
               data-testid={`rp-effort-select-${re.roleId}`}
@@ -224,7 +225,7 @@ export default function RightPanel({
                 data-testid={`rp-role-add-${r.id}`}
                 onClick={() => addRole(r.id)}
               >
-                + {r.id.toUpperCase()}
+                + {r.name.toUpperCase()}
               </button>
             ))}
           </div>
@@ -268,6 +269,38 @@ export default function RightPanel({
               .replace('{pct}', String(draft.mvpPct))
               .replace('{rest}', String(100 - draft.mvpPct))}
           </div>
+        )}
+
+        {/* Tags in edit mode */}
+        {riskLayers.length > 0 && (
+          <>
+            <div className="rp-sep" />
+            <div className="rp-edit-label">{t('sectionTags')}</div>
+            <div className="rp-role-add-row" style={{ flexWrap: 'wrap', gap: 4 }}>
+              {riskLayers.map(tag => {
+                const active = draft.labels.includes(tag.name)
+                return (
+                  <button
+                    key={tag.id}
+                    className="rp-role-add-btn"
+                    data-testid={`rp-tag-${tag.id}`}
+                    style={active ? { border: '1px solid var(--oe-green)', color: 'var(--oe-green)' } : undefined}
+                    onClick={() => setDraft(prev => {
+                      if (!prev) return prev
+                      return {
+                        ...prev,
+                        labels: active
+                          ? prev.labels.filter(l => l !== tag.name)
+                          : [...prev.labels, tag.name],
+                      }
+                    })}
+                  >
+                    {active ? '✓' : '+'} {tag.name}
+                  </button>
+                )
+              })}
+            </div>
+          </>
         )}
 
         <div className="rp-btn-row">
@@ -330,7 +363,7 @@ export default function RightPanel({
           const role = roleMap.get(re.roleId)
           return (
             <span key={re.roleId} className={CHIP_CLASS[re.roleId] ?? 'rp-chip-lg chip--default'}>
-              {re.roleId.toUpperCase()} {re.days}d
+              {(role?.name ?? re.roleId).toUpperCase()} {re.days}d
               {role && role.people > 0 && (
                 <span style={{ opacity: 0.7 }}> · {role.people}p</span>
               )}
