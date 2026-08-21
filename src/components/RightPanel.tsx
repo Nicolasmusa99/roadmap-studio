@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import type { Story, ScheduledStory, TeamRole, EffortScaleStep, RiskLayer } from '../lib/types.ts'
+import type { Story, ScheduledStory, TeamRole, EffortScaleStep, RiskLayer, RiceData } from '../lib/types.ts'
+import { RICE_IMPACT_SCALE } from '../lib/types.ts'
 import { parseDate } from '../lib/calendar.ts'
 import { storyDegradation } from '../lib/threats.ts'
+import { storyRiceScore, storyTotalDays } from '../lib/aggregation.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
 interface Props {
@@ -45,6 +47,7 @@ function cloneStory(s: Story): Story {
     labels:      [...s.labels],
     dependsOn:   [...s.dependsOn],
     datasetIds:  [...s.datasetIds],
+    rice:        s.rice ? { ...s.rice } : undefined,
   }
 }
 
@@ -89,10 +92,15 @@ export default function RightPanel({
 
   // Roles added but never given an effort (days === 0) are discarded on save —
   // the PM added the row but didn't pick a scale value, so there's nothing to schedule.
+  // RICE: cleared if any field is missing/zero (partial data = no score).
   function handleSave() {
     if (!draft) return
     const cleanedRoleEfforts = draft.roleEfforts.filter(re => re.days > 0)
-    onUpdateStory(draft.id, { ...draft, roleEfforts: cleanedRoleEfforts })
+    const rice: RiceData | undefined =
+      draft.rice && draft.rice.reach > 0 && draft.rice.impact > 0 && draft.rice.confidence > 0
+        ? { ...draft.rice }
+        : undefined
+    onUpdateStory(draft.id, { ...draft, roleEfforts: cleanedRoleEfforts, rice })
     setMode('read')
     setDraft(null)
   }
@@ -303,6 +311,77 @@ export default function RightPanel({
           </>
         )}
 
+        {/* ── RICE ──────────────────────────────────────────────────────── */}
+        <div className="rp-sep" />
+        <div className="rp-edit-label">RICE (optional)</div>
+        <div className="rp-rice-edit">
+          <div className="rp-rice-edit-row">
+            <span className="rp-rice-edit-lbl">Reach</span>
+            <input
+              type="number"
+              className="rp-edit-input rp-rice-number"
+              min={0}
+              placeholder="users / events"
+              value={draft.rice?.reach ?? ''}
+              onChange={e => {
+                const v = parseFloat(e.target.value)
+                const reach = Number.isNaN(v) ? 0 : v
+                setDraft(prev => {
+                  if (!prev) return prev
+                  const r = prev.rice ?? { reach: 0, impact: 0, confidence: 0 }
+                  return { ...prev, rice: { ...r, reach } }
+                })
+              }}
+            />
+          </div>
+          <div className="rp-rice-edit-row">
+            <span className="rp-rice-edit-lbl">Impact</span>
+            <select
+              className="rp-effort-select"
+              value={draft.rice?.impact ?? ''}
+              onChange={e => {
+                const v = parseFloat(e.target.value)
+                const impact = Number.isNaN(v) ? 0 : v
+                setDraft(prev => {
+                  if (!prev) return prev
+                  const r = prev.rice ?? { reach: 0, impact: 0, confidence: 0 }
+                  return { ...prev, rice: { ...r, impact } }
+                })
+              }}
+            >
+              <option value="">— not set —</option>
+              {RICE_IMPACT_SCALE.map(s => (
+                <option key={s.value} value={s.value}>{s.label} ({s.value})</option>
+              ))}
+            </select>
+          </div>
+          <div className="rp-rice-edit-row">
+            <span className="rp-rice-edit-lbl">Confidence</span>
+            <select
+              className="rp-effort-select"
+              value={draft.rice?.confidence ?? ''}
+              onChange={e => {
+                const v = parseFloat(e.target.value)
+                const confidence = Number.isNaN(v) ? 0 : v
+                setDraft(prev => {
+                  if (!prev) return prev
+                  const r = prev.rice ?? { reach: 0, impact: 0, confidence: 0 }
+                  return { ...prev, rice: { ...r, confidence } }
+                })
+              }}
+            >
+              <option value="">— not set —</option>
+              <option value={100}>100% — certain</option>
+              <option value={80}>80% — confident</option>
+              <option value={50}>50% — moderate</option>
+              <option value={20}>20% — rough guess</option>
+            </select>
+          </div>
+          <div className="rp-rice-edit-hint">
+            Effort divisor = total person-days ({storyTotalDays(draft)}d). Set all three fields for a score.
+          </div>
+        </div>
+
         <div className="rp-btn-row">
           <button className="btn-save" data-testid="rp-save-btn" onClick={handleSave}>
             {t('saveStory')}
@@ -475,6 +554,32 @@ export default function RightPanel({
           </div>
         </>
       )}
+
+      {/* RICE score — shown only when all three fields are set */}
+      {(() => {
+        const score = storyRiceScore(story)
+        if (score === null) return null
+        const { reach, impact, confidence } = story.rice!
+        const effort = storyTotalDays(story)
+        const impactLabel = RICE_IMPACT_SCALE.find(s => s.value === impact)?.label ?? String(impact)
+        return (
+          <>
+            <div className="rp-sep" />
+            <div className="rp-section-label">RICE SCORE</div>
+            <div className="rp-rice-formula">
+              <span className="rp-rice-comp" title="Reach">R {reach.toLocaleString()}</span>
+              <span className="rp-rice-op">×</span>
+              <span className="rp-rice-comp" title={`Impact: ${impactLabel}`}>I {impact}</span>
+              <span className="rp-rice-op">×</span>
+              <span className="rp-rice-comp" title="Confidence">{confidence}%</span>
+              <span className="rp-rice-op">÷</span>
+              <span className="rp-rice-comp" title="Effort (person-days)">E {effort}d</span>
+              <span className="rp-rice-op">=</span>
+              <span className="rp-rice-score">{score.toFixed(1)}</span>
+            </div>
+          </>
+        )
+      })()}
 
       {/* Delete — any story is deletable in-session; confirm + dependency cleanup
           happen in App.handleDeleteStory. Reset restores the baseline (invariant #13). */}

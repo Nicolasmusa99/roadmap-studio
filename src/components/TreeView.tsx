@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
 import type { AppState, ScheduledStory } from '../lib/types.ts'
 import type { ReorderResult } from '../lib/reorder.ts'
-import { epicEffortDays, epicWindow, componentEffortDays } from '../lib/aggregation.ts'
+import { epicEffortDays, epicWindow, componentEffortDays, storyRiceScore, epicRiceRollup } from '../lib/aggregation.ts'
 import { storiesInScope, storyDegradation } from '../lib/threats.ts'
 import { epicDeletionImpact } from '../lib/mutations.ts'
 import { parseDate } from '../lib/calendar.ts'
@@ -77,6 +77,7 @@ export default function TreeView({
   )
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(allIds))
   const [rationaleOpen, setRationaleOpen] = useState(false)
+  const [riceSort, setRiceSort] = useState(false)
   const { t } = useI18n()
 
   // ── Drag state ─────────────────────────────────────────────────────────────
@@ -104,6 +105,17 @@ export default function TreeView({
   const scopedStories = useMemo(
     () => storiesInScope(state.stories, state.config.riskLayers),
     [state.stories, state.config.riskLayers],
+  )
+
+  // ── RICE scores (display only — never stored, never affects schedule) ─────────
+  const storyRiceScores = useMemo(
+    () => new Map(state.stories.map(s => [s.id, storyRiceScore(s)])),
+    [state.stories],
+  )
+
+  const epicRollups = useMemo(
+    () => new Map(state.epics.map(e => [e.id, epicRiceRollup(e.id, state.stories)])),
+    [state.epics, state.stories],
   )
 
   const epicIndexMap = useMemo(() => {
@@ -212,24 +224,45 @@ export default function TreeView({
 
       {/* Sequence rationale — why this order, collapsed by default */}
       <div className="tree-rationale">
-        <button
-          className="tree-rationale-toggle"
-          onClick={() => setRationaleOpen(o => !o)}
-          aria-expanded={rationaleOpen}
-        >
-          {rationaleOpen ? '▼' : '▶'} WHY THIS SEQUENCE
-        </button>
+        <div className="tree-rationale-top">
+          <button
+            className="tree-rationale-toggle"
+            onClick={() => setRationaleOpen(o => !o)}
+            aria-expanded={rationaleOpen}
+          >
+            {rationaleOpen ? '▼' : '▶'} WHY THIS SEQUENCE
+          </button>
+          <button
+            className={`tree-rice-sort-btn${riceSort ? ' tree-rice-sort-btn--active' : ''}`}
+            onClick={() => setRiceSort(s => !s)}
+            title="Sort by RICE score (display only — does not change the roadmap or schedule)"
+          >
+            ◈ {riceSort ? 'RICE ORDER' : 'SORT BY RICE'}
+          </button>
+        </div>
         {rationaleOpen && (
           <div className="tree-rationale-body">
             <p>
               The order is set by dependencies: a story is scheduled after everything it depends on.
             </p>
+            {riceSort && (
+              <p className="tree-rationale-rice-note">
+                RICE sort is active — stories and stages are reordered by score for analysis only.
+                The scheduler and timeline are <strong>unchanged</strong>.
+              </p>
+            )}
           </div>
         )}
       </div>
 
       {state.components.map(comp => {
-        const compEpics = state.epics.filter(e => e.componentId === comp.id)
+        const compEpics = riceSort
+          ? [...state.epics.filter(e => e.componentId === comp.id)].sort((a, b) => {
+              const sa = epicRollups.get(a.id)?.score ?? -Infinity
+              const sb = epicRollups.get(b.id)?.score ?? -Infinity
+              return sb - sa
+            })
+          : state.epics.filter(e => e.componentId === comp.id)
         const compStories = scopedStories.filter(s => compEpics.some(e => e.id === s.epicId))
         const compEffort = componentEffortDays(comp.id, state.epics, scopedStories)
         const isExpanded = expanded.has(comp.id)
@@ -253,13 +286,21 @@ export default function TreeView({
               <div className="tree-comp-body">
                 {compEpics.map(epic => {
                   const stageNum = epicIndexMap.get(epic.id) ?? 1
-                  const epicStories = scopedStories.filter(s => s.epicId === epic.id)
+                  const allEpicStories = scopedStories.filter(s => s.epicId === epic.id)
+                  const epicStories = riceSort
+                    ? [...allEpicStories].sort((a, b) => {
+                        const sa = storyRiceScores.get(a.id) ?? -Infinity
+                        const sb = storyRiceScores.get(b.id) ?? -Infinity
+                        return sb - sa
+                      })
+                    : allEpicStories
                   const effort = epicEffortDays(epic.id, scopedStories)
                   const win = epicWindow(epic.id, scopedStories, scheduledStories)
                   const isEpicExpanded = expanded.has(epic.id)
                   const hasBlocked = epicStories.some(s => schedMap.get(s.id)?.blocked)
                   const isDragging = draggingId === epic.id
                   const isDropTarget = dropTarget?.id === epic.id && dragRef.current?.type === 'epic'
+                  const riceRollup = epicRollups.get(epic.id)
 
                   return (
                     <div
@@ -363,6 +404,11 @@ export default function TreeView({
                               {fmtShortDate(win.startDate)} → {fmtShortDate(win.endDate)}
                             </span>
                           )}
+                          {riceRollup && (
+                            <span className="tree-epic-rice" title={`RICE ${riceRollup.score.toFixed(1)} · ${riceRollup.completeCount}/${riceRollup.totalCount} stories`}>
+                              ◈ {riceRollup.score.toFixed(1)}
+                            </span>
+                          )}
                         </span>
                       </button>
 
@@ -433,6 +479,12 @@ export default function TreeView({
                                   {story.estimationState === 'auto' && (
                                     <span className="story-badge story-badge--auto">AUTO</span>
                                   )}
+                                  {(() => {
+                                    const rs = storyRiceScores.get(story.id)
+                                    return rs !== null && rs !== undefined
+                                      ? <span className="story-badge story-badge--rice" title={`RICE score: ${rs.toFixed(2)}`}>◈ {rs.toFixed(1)}</span>
+                                      : null
+                                  })()}
                                   {degr.degraded && (
                                     <span
                                       className="story-badge story-badge--degraded"

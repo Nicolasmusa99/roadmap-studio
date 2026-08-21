@@ -69,3 +69,65 @@ export function epicWindow(
     endDate: ends[ends.length - 1],
   }
 }
+
+// ─── RICE calculations ────────────────────────────────────────────────────────
+
+// Score for one story. Returns null when:
+//   - story.rice is absent (not set)
+//   - totalDays === 0 (no effort assigned — can't divide)
+//   - any RICE field is 0 or negative (incomplete data)
+// Formula: (Reach × Impact × Confidence%) / TotalPersonDays
+// Effort reuse: storyTotalDays() — sum of all role-effort days (invariant #2).
+// durationDays is intentionally NOT used: it folds in team size, which is a
+// scheduling artifact, not a measure of work cost.
+export function storyRiceScore(story: Story): number | null {
+  const effort = storyTotalDays(story)
+  if (!story.rice || effort === 0) return null
+  const { reach, impact, confidence } = story.rice
+  if (reach <= 0 || impact <= 0 || confidence <= 0) return null
+  return (reach * impact * (confidence / 100)) / effort
+}
+
+export interface EpicRiceRollup {
+  score: number
+  sumReach: number
+  wtdImpact: number   // reach-weighted average impact
+  avgConf: number     // simple average confidence (%)
+  sumEffort: number   // total person-days of RICE-complete stories only
+  completeCount: number
+  totalCount: number
+}
+
+// Epic RICE rollup. Only "RICE-complete" stories participate (all three fields
+// set and effort > 0). Partial stories are ignored — no silent assumptions.
+// Aggregation rules:
+//   Reach      = Σ reach (additive; each story reaches distinct users/events)
+//   Impact     = reach-weighted avg (high-reach stories have proportionally
+//                more weight on the epic's impact signal)
+//   Confidence = simple avg (estimation quality, not proportional to reach)
+//   Effort     = Σ totalDays of complete stories (invariant #3: sum, not avg)
+export function epicRiceRollup(epicId: string, stories: Story[]): EpicRiceRollup | null {
+  const epicStories = stories.filter(s => s.epicId === epicId)
+  const complete = epicStories.filter(s => {
+    const effort = storyTotalDays(s)
+    return s.rice && s.rice.reach > 0 && s.rice.impact > 0 && s.rice.confidence > 0 && effort > 0
+  })
+  if (complete.length === 0) return null
+
+  const sumReach = complete.reduce((acc, s) => acc + s.rice!.reach, 0)
+  const wtdImpact = sumReach > 0
+    ? complete.reduce((acc, s) => acc + s.rice!.impact * s.rice!.reach, 0) / sumReach
+    : complete.reduce((acc, s) => acc + s.rice!.impact, 0) / complete.length
+  const avgConf   = complete.reduce((acc, s) => acc + s.rice!.confidence, 0) / complete.length
+  const sumEffort = complete.reduce((acc, s) => acc + storyTotalDays(s), 0)
+
+  return {
+    score: (sumReach * wtdImpact * (avgConf / 100)) / sumEffort,
+    sumReach,
+    wtdImpact,
+    avgConf,
+    sumEffort,
+    completeCount: complete.length,
+    totalCount: epicStories.length,
+  }
+}

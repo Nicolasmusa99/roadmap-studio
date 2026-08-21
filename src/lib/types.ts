@@ -52,6 +52,26 @@ export interface RoleEffort {
   days: number
 }
 
+// ─── RICE prioritization ──────────────────────────────────────────────────────
+
+// Fixed impact scale (standard RICE from Intercom). Values are the numeric
+// weights used in the formula. Not editable — the scale is an industry standard.
+export const RICE_IMPACT_SCALE = [
+  { label: 'Massive', value: 3    },
+  { label: 'High',    value: 2    },
+  { label: 'Medium',  value: 1    },
+  { label: 'Low',     value: 0.5  },
+  { label: 'Minimal', value: 0.25 },
+] as const
+
+// RICE fields per story. All three are required for a score to exist.
+// Effort is NOT stored here — reused from story.roleEfforts (storyTotalDays).
+export interface RiceData {
+  reach:      number  // positive number: users/events reached in a period
+  impact:     number  // one of RICE_IMPACT_SCALE values
+  confidence: number  // 0–100 (stored as an integer %, e.g. 80)
+}
+
 // ─── Risk layers (threats) ───────────────────────────────────────────────────
 
 export interface RiskLayer {
@@ -85,6 +105,8 @@ export interface Story {
   isProtected: boolean // true = can't be deleted (brief stories)
   datasetIds: string[]
   labels: string[]
+  // RICE prioritization (optional — no score when absent)
+  rice?: RiceData
   // Graceful degradation (heat↔energy cross): threat names that ENRICH this story
   // without gating it. Unlike a label, an amplifying threat going inactive does NOT
   // filter the story out — it keeps its own value and only loses that dimension,

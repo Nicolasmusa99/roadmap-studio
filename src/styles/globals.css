@@ -2444,3 +2444,121 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   text-align: center;
   opacity: 0.7;
 }
+
+/* ─── RICE ──────────────────────────────────────────────────────────────────── */
+
+/* TreeView — sort toggle */
+.tree-rationale-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tree-rice-sort-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+  padding: 3px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tree-rice-sort-btn:hover { color: var(--oe-green); border-color: var(--oe-green); }
+.tree-rice-sort-btn--active {
+  color: var(--oe-green);
+  border-color: var(--oe-green);
+  background: var(--oe-green-weak);
+}
+.tree-rationale-rice-note {
+  color: var(--oe-green-dim);
+  font-size: 11px;
+  margin: 4px 0 0;
+}
+
+/* TreeView — epic RICE score */
+.tree-epic-rice {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--oe-green);
+  letter-spacing: 0.04em;
+  margin-left: 4px;
+}
+
+/* TreeView — story RICE badge */
+.story-badge--rice {
+  background: var(--oe-green-weak);
+  color: var(--oe-green);
+  border: 1px solid color-mix(in srgb, var(--oe-green) 35%, transparent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* RightPanel — RICE edit form */
+.rp-rice-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.rp-rice-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rp-rice-edit-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  width: 72px;
+  flex-shrink: 0;
+}
+.rp-rice-number {
+  width: 100%;
+  max-width: 120px;
+}
+.rp-rice-edit-hint {
+  font-size: 10px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+  padding: 4px 0 2px;
+  opacity: 0.7;
+}
+
+/* RightPanel — RICE score display (read mode) */
+.rp-rice-formula {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.rp-rice-comp {
+  color: var(--ink-base);
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.rp-rice-op {
+  color: var(--ink-muted);
+  font-size: 10px;
+}
+.rp-rice-score {
+  color: var(--oe-green);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  padding: 0 4px;
+}
