@@ -167,4 +167,14 @@ export const en = {
     'Cannot move STAGE "{epicName}" here: {storyId} depends on {depId} (STAGE "{depEpicName}"). The source STAGE must come after.',
   errStoryMove:
     'Cannot move "{storyTitle}": it depends on {depId}, which would appear after it in the same STAGE.',
+
+  // ── Home screen — mini-dashboard indicators ───────────────────────────────
+  homeNRoles: '{n} roles',
+  homeNTags: '{n} tags',
+  homeProjectedEnd: 'Ends {date}',
+  homeNoProjectedEnd: 'No end date',
+  homeCheckpointOnTrack: '{name} ON TRACK',
+  homeCheckpointAtRisk: '{name} +{weeks}wk',
+  homeCheckpointBlocked: '{name} BLOCKED',
+  homeNoCheckpoint: 'No checkpoint',
 }

@@ -1969,6 +1969,28 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   gap: 6px;
 }
 .home-meta-sep { opacity: 0.4; }
+.home-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.home-chip {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.home-chip--on-track { color: var(--oe-green); border-color: var(--oe-green-dim); }
+.home-chip--at-risk  { color: var(--warn);     border-color: var(--warn); }
+.home-chip--blocked  { color: var(--blocked);  border-color: var(--blocked); }
 .home-item-actions {
   display: flex;
   gap: 6px;

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { StoredRoadmap } from '../lib/storage'
+import { computeRoadmapIndicators, type RoadmapIndicators } from '../lib/indicators'
 import { useI18n } from '../i18n/I18nContext.tsx'
 
 interface Props {
@@ -20,12 +21,41 @@ function fmtDate(iso: string): string {
   }
 }
 
+function fmtShortDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+  } catch {
+    return '—'
+  }
+}
+
+function CheckpointChip({ ind, t }: { ind: RoadmapIndicators; t: (k: string, p?: Record<string, string>) => string }) {
+  const cp = ind.nextCheckpoint
+  if (!cp) return <span className="home-chip">{t('homeNoCheckpoint')}</span>
+  if (cp.status === 'on-track') {
+    return <span className="home-chip home-chip--on-track">{t('homeCheckpointOnTrack', { name: cp.name })}</span>
+  }
+  if (cp.status === 'at-risk') {
+    return <span className="home-chip home-chip--at-risk">{t('homeCheckpointAtRisk', { name: cp.name, weeks: String(cp.gapWeeks) })}</span>
+  }
+  return <span className="home-chip home-chip--blocked">{t('homeCheckpointBlocked', { name: cp.name })}</span>
+}
+
 export default function HomeScreen({ roadmaps, onCreate, onOpen, onRename, onDelete }: Props) {
   const { t } = useI18n()
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+
+  // Compute indicators for every roadmap once; memoized on the roadmaps array.
+  const indicatorsMap = useMemo(() => {
+    const m = new Map<string, RoadmapIndicators>()
+    for (const rm of roadmaps) {
+      m.set(rm.id, computeRoadmapIndicators(rm.state))
+    }
+    return m
+  }, [roadmaps])
 
   function submitCreate() {
     if (newName.trim()) onCreate(newName.trim())
@@ -103,62 +133,79 @@ export default function HomeScreen({ roadmaps, onCreate, onOpen, onRename, onDel
           </div>
         ) : (
           <ul className="home-list" data-testid="home-roadmap-list">
-            {roadmaps.map(rm => (
-              <li key={rm.id} className="home-item" data-testid={`home-item-${rm.id}`}>
-                <div className="home-item-info">
-                  {renamingId === rm.id ? (
-                    <input
-                      className="home-rename-input"
-                      data-testid={`home-rename-input-${rm.id}`}
-                      value={renameValue}
-                      autoFocus
-                      onChange={e => setRenameValue(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') submitRename(rm.id)
-                        if (e.key === 'Escape') { setRenamingId(null); setRenameValue('') }
-                      }}
-                      onBlur={() => submitRename(rm.id)}
-                    />
-                  ) : (
+            {roadmaps.map(rm => {
+              const ind = indicatorsMap.get(rm.id)!
+              return (
+                <li key={rm.id} className="home-item" data-testid={`home-item-${rm.id}`}>
+                  <div className="home-item-info">
+                    {renamingId === rm.id ? (
+                      <input
+                        className="home-rename-input"
+                        data-testid={`home-rename-input-${rm.id}`}
+                        value={renameValue}
+                        autoFocus
+                        onChange={e => setRenameValue(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') submitRename(rm.id)
+                          if (e.key === 'Escape') { setRenamingId(null); setRenameValue('') }
+                        }}
+                        onBlur={() => submitRename(rm.id)}
+                      />
+                    ) : (
+                      <button
+                        className="home-item-name"
+                        data-testid={`home-open-${rm.id}`}
+                        onClick={() => onOpen(rm.id)}
+                      >
+                        {rm.name}
+                      </button>
+                    )}
+                    <div className="home-item-meta">
+                      <span>{t('homeNStories', { n: String(ind.storyCount) })}</span>
+                      <span className="home-meta-sep">·</span>
+                      <span>{t('homeNRoles', { n: String(ind.roleCount) })}</span>
+                      <span className="home-meta-sep">·</span>
+                      <span>{t('homeNTags', { n: String(ind.tagCount) })}</span>
+                      <span className="home-meta-sep">·</span>
+                      <span>{t('homeLastEdited', { date: fmtDate(rm.lastEdited) })}</span>
+                    </div>
+                    <div className="home-indicators">
+                      <CheckpointChip ind={ind} t={t} />
+                      {ind.projectedEnd ? (
+                        <span className="home-chip">
+                          {t('homeProjectedEnd', { date: fmtShortDate(ind.projectedEnd) })}
+                        </span>
+                      ) : (
+                        <span className="home-chip">{t('homeNoProjectedEnd')}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="home-item-actions">
                     <button
-                      className="home-item-name"
-                      data-testid={`home-open-${rm.id}`}
+                      className="home-action-btn"
+                      data-testid={`home-open-btn-${rm.id}`}
                       onClick={() => onOpen(rm.id)}
                     >
-                      {rm.name}
+                      {t('homeOpen')}
                     </button>
-                  )}
-                  <div className="home-item-meta">
-                    <span>{t('homeNStories', { n: String(rm.state.stories.length) })}</span>
-                    <span className="home-meta-sep">·</span>
-                    <span>{t('homeLastEdited', { date: fmtDate(rm.lastEdited) })}</span>
+                    <button
+                      className="home-action-btn"
+                      data-testid={`home-rename-btn-${rm.id}`}
+                      onClick={() => { setRenamingId(rm.id); setRenameValue(rm.name) }}
+                    >
+                      {t('homeRename')}
+                    </button>
+                    <button
+                      className="home-action-btn home-action-btn--danger"
+                      data-testid={`home-delete-btn-${rm.id}`}
+                      onClick={() => handleDelete(rm)}
+                    >
+                      {t('homeDelete')}
+                    </button>
                   </div>
-                </div>
-                <div className="home-item-actions">
-                  <button
-                    className="home-action-btn"
-                    data-testid={`home-open-btn-${rm.id}`}
-                    onClick={() => onOpen(rm.id)}
-                  >
-                    {t('homeOpen')}
-                  </button>
-                  <button
-                    className="home-action-btn"
-                    data-testid={`home-rename-btn-${rm.id}`}
-                    onClick={() => { setRenamingId(rm.id); setRenameValue(rm.name) }}
-                  >
-                    {t('homeRename')}
-                  </button>
-                  <button
-                    className="home-action-btn home-action-btn--danger"
-                    data-testid={`home-delete-btn-${rm.id}`}
-                    onClick={() => handleDelete(rm)}
-                  >
-                    {t('homeDelete')}
-                  </button>
-                </div>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
         )}
       </main>

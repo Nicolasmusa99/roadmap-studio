@@ -168,4 +168,14 @@ export const es: typeof en = {
     'No se puede mover el STAGE "{epicName}" aquí: {storyId} depende de {depId} (del STAGE "{depEpicName}"). El STAGE de origen debe ir después.',
   errStoryMove:
     'No se puede mover "{storyTitle}": depende de {depId}, que quedaría después en el mismo STAGE.',
+
+  // ── Home screen — mini-dashboard indicators ───────────────────────────────
+  homeNRoles: '{n} roles',
+  homeNTags: '{n} etiquetas',
+  homeProjectedEnd: 'Termina {date}',
+  homeNoProjectedEnd: 'Sin fecha estimada',
+  homeCheckpointOnTrack: '{name} EN TIEMPO',
+  homeCheckpointAtRisk: '{name} +{weeks}sem',
+  homeCheckpointBlocked: '{name} BLOQUEADO',
+  homeNoCheckpoint: 'Sin checkpoint',
 }
