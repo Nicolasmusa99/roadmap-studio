@@ -1,36 +1,47 @@
 /* ─── Design tokens (docs/design-tokens.md) ─────────────────────────────────── */
 :root {
-  --oe-green:       #1E7A4D;
-  --oe-green-dim:   #174F35;
-  --oe-green-weak:  #E6F2EC;
-  --bg:             #F5F6F3;
-  --panel:          #FFFFFF;
-  --panel-alt:      #F0F1EE;
-  --ink:            #14201C;
-  --ink-muted:      #6B7A72;
-  --line:           #D8DDD9;
-  --warn:           #B5551B;
-  --warn-weak:      #F5E9E2;
-  --blocked:        #C0392B;
-  --blocked-weak:   #FBEAEA;
+  /* ── Doom green — dark emerald, military, NOT neon ———————————————— */
+  --oe-green:       #4A9068;
+  --oe-green-dim:   #336650;
+  --oe-green-weak:  #162A1E;
+
+  /* ── Surface hierarchy (near-black base) ─────────────────────────────── */
+  --bg:             #0C0F0D;
+  --panel:          #141A16;
+  --panel-alt:      #1C2420;
+
+  /* ── Text ──────────────────────────────────────────────────────── */
+  --ink:            #D4E8DA;
+  --ink-muted:      #6E8A78;
+
+  /* ── Border ──────────────────────────────────────────────────── */
+  --line:           #263028;
+
+  /* ── Status: at-risk (amber) ──────────────────────────────────── */
+  --warn:           #CC7C3A;
+  --warn-weak:      #221508;
+
+  /* ── Status: blocked (red) ────────────────────────────────────── */
+  --blocked:        #C06464;
+  --blocked-weak:   #221010;
 
   /* Component accent colors */
-  --c-data:   #6B7A72;
-  --c-viz:    #2E6E6A;
-  --c-risk:   #1E7A4D;
-  --c-ai:     #5A6E52;
+  --c-data:   #708A80;
+  --c-viz:    #4A8888;
+  --c-risk:   #4A9068;
+  --c-ai:     #7A8A70;
 
-  /* Role chip colors */
-  --chip-data-bg:  #E8EDF0;
-  --chip-data-fg:  #3A5A6A;
-  --chip-full-bg:  #E4F0EA;
-  --chip-full-fg:  #1E5C3A;
-  --chip-ai-bg:    #EDE8F0;
-  --chip-ai-fg:    #5A3A6A;
-  --chip-design-bg: #F0ECE4;
-  --chip-design-fg: #6A4E1E;
-  --chip-def-bg:   #EDEDED;
-  --chip-def-fg:   #444;
+  /* Role chip colors — dark hued surfaces */
+  --chip-data-bg:   #162028;
+  --chip-data-fg:   #7AAABB;
+  --chip-full-bg:   #142A1E;
+  --chip-full-fg:   #5AAA7A;
+  --chip-ai-bg:     #1E1628;
+  --chip-ai-fg:     #9A82BB;
+  --chip-design-bg: #281E10;
+  --chip-design-fg: #CC8840;
+  --chip-def-bg:    #1C2420;
+  --chip-def-fg:    #8A9A88;
 
   --font-mono:  'JetBrains Mono', 'Courier New', monospace;
   --font-sans:  'Inter', system-ui, sans-serif;
@@ -84,7 +95,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   inset: 0;
   background: repeating-linear-gradient(
     0deg, transparent, transparent 3px,
-    rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 4px
+    rgba(255,255,255,0.025) 3px, rgba(255,255,255,0.025) 4px
   );
   pointer-events: none;
 }
@@ -109,7 +120,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   border-radius: var(--radius);
   background: var(--oe-green-weak);
   color: var(--oe-green-dim);
-  border: 1px solid rgba(30,122,77,0.2);
+  border: 1px solid rgba(74,144,104,0.25);
 }
 .topbar-spacer { flex: 1; }
 .btn-reset {
@@ -619,9 +630,9 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   flex-shrink: 0;
 }
 .story-badge--mvp  { background: var(--oe-green-weak); color: var(--oe-green-dim); }
-.story-badge--auto { background: #FFF3CD; color: #856404; }
+.story-badge--auto { background: #201B00; color: #C49030; }
 .story-badge--blocked { background: var(--blocked-weak); color: var(--blocked); }
-.story-badge--degraded { background: #FDE6C8; color: #8A5A1B; }
+.story-badge--degraded { background: #201600; color: #C47A38; }
 
 /* ─── Right panel ────────────────────────────────────────────────────────────── */
 .right-panel {
@@ -985,7 +996,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   width: max-content;
   z-index: 9999;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.55);
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -1127,7 +1138,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   flex-shrink: 0;
 }
 .tl-legend-swatch--bar     { background: var(--oe-green); opacity: 0.85; }
-.tl-legend-swatch--epic    { background: var(--oe-green-weak); border: 1px solid rgba(30,122,77,0.35); }
+.tl-legend-swatch--epic    { background: var(--oe-green-weak); border: 1px solid rgba(74,144,104,0.4); }
 .tl-legend-swatch--target  {
   background: transparent;
   border-top: 2px dashed var(--ink-muted);
@@ -1223,7 +1234,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   height: 10px;
   border-radius: 3px;
   background: var(--oe-green-weak);
-  border: 1px solid rgba(30,122,77,0.35);
+  border: 1px solid rgba(74,144,104,0.4);
 }
 
 /* Story row + bar */
@@ -1426,7 +1437,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(20, 32, 28, 0.4);
+  background: rgba(0, 0, 0, 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1441,7 +1452,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   max-height: 88vh;
   overflow-y: auto;
   padding: 20px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.65);
 }
 .modal-title {
   font-family: var(--font-mono);
@@ -1711,7 +1722,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.60), 0 0 0 1px rgba(74,144,104,0.12);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -1807,7 +1818,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   font-size: 10px;
   letter-spacing: 0.04em;
   padding: 5px 16px;
-  border-bottom: 1px solid rgba(181,85,27,0.25);
+  border-bottom: 1px solid rgba(204,124,58,0.35);
   flex-shrink: 0;
 }
 
@@ -1978,3 +1989,50 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .home-action-btn:hover { color: var(--oe-green); border-color: var(--oe-green); }
 .home-action-btn--danger:hover { color: var(--warn); border-color: var(--warn); }
+
+/* ─── Dark theme overrides & arcade phosphor glow ───────────────────────────── */
+/* These extend base selectors specifically for the dark palette.                */
+
+/* Selected timeline story: stronger bg so it reads against dark panel */
+.tl-story-row--selected .tl-gutter { background: #1E3328; }
+.tl-story-bar--selected { outline-color: var(--oe-green); }
+
+/* Timeline epic bar: slightly more opaque on dark bg */
+.tl-story-bar { opacity: 0.90; }
+
+/* Input fields: panel-alt bg looks better than panel for form controls on dark */
+.modal-input       { background: var(--panel-alt); }
+.rp-input          { background: var(--panel-alt); }
+.modal-story-picker { background: var(--panel-alt); }
+
+/* Phosphor glow — very subtle CRT halo on key green-text elements.
+   Applied only to large/prominent monospace labels, never to body text. */
+.topbar-logo        { text-shadow: 0 0 12px rgba(74,144,104,0.40); }
+.tl-gutter--epic    { text-shadow: 0 0 10px rgba(74,144,104,0.35); }
+.home-title         { text-shadow: 0 0 14px rgba(74,144,104,0.35); }
+.asm-title          { text-shadow: 0 0 10px rgba(74,144,104,0.30); }
+
+/* Active tabs & primary buttons: faint inner glow so they feel 'lit' */
+.view-toggle-btn--active {
+  box-shadow: 0 0 0 1px rgba(74,144,104,0.50) inset,
+              0 0 8px rgba(74,144,104,0.20);
+}
+.lang-btn--active {
+  box-shadow: 0 0 8px rgba(74,144,104,0.25);
+}
+.modal-btn--primary {
+  box-shadow: 0 0 12px rgba(74,144,104,0.20);
+}
+
+/* Drag-drop indicators: brighter on dark bg */
+.drop-ind-before { box-shadow: 0 -2px 0 0 var(--oe-green), 0 -2px 6px rgba(74,144,104,0.4); }
+.drop-ind-after  { box-shadow: 0  2px 0 0 var(--oe-green), 0  2px 6px rgba(74,144,104,0.4); }
+
+/* Milestone at-risk flag: make the amber read clearly */
+.tl-marker--risk .tl-marker-flag { background: var(--warn-weak); }
+
+/* Scrollbar — dark theme aesthetic */
+::-webkit-scrollbar               { width: 6px; height: 6px; }
+::-webkit-scrollbar-track         { background: var(--bg); }
+::-webkit-scrollbar-thumb         { background: var(--line); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover   { background: var(--ink-muted); }
