@@ -47,6 +47,7 @@ function makeRoadmap(): AppState {
     stories,
     milestones: [],
     datasets: [],
+    assumptionSections: [],
     assumptions: [],
     config: { calendarConfig: cal, effortScale: [], riskLayers: [
       { id: 'l-alpha', name: 'alpha', active: true },

@@ -1,4 +1,4 @@
-import type { AppState, Story, AssumptionSection } from './types'
+import type { AppState, Story } from './types'
 
 // Pure state transformations used by the hook mutations.
 // Each function returns a new AppState without mutating the input.

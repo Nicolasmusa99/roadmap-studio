@@ -29,7 +29,8 @@ function fmtShortDate(iso: string): string {
   }
 }
 
-function CheckpointChip({ ind, t }: { ind: RoadmapIndicators; t: (k: string, p?: Record<string, string>) => string }) {
+function CheckpointChip({ ind }: { ind: RoadmapIndicators }) {
+  const { t } = useI18n()
   const cp = ind.nextCheckpoint
   if (!cp) return <span className="home-chip">{t('homeNoCheckpoint')}</span>
   if (cp.status === 'on-track') {
@@ -170,7 +171,7 @@ export default function HomeScreen({ roadmaps, onCreate, onOpen, onRename, onDel
                       <span>{t('homeLastEdited', { date: fmtDate(rm.lastEdited) })}</span>
                     </div>
                     <div className="home-indicators">
-                      <CheckpointChip ind={ind} t={t} />
+                      <CheckpointChip ind={ind} />
                       {ind.projectedEnd ? (
                         <span className="home-chip">
                           {t('homeProjectedEnd', { date: fmtShortDate(ind.projectedEnd) })}
