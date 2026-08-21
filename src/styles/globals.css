@@ -2058,3 +2058,104 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 ::-webkit-scrollbar-track         { background: var(--bg); }
 ::-webkit-scrollbar-thumb         { background: var(--line); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover   { background: var(--ink-muted); }
+
+/* ─── Mobile viewport wall (workspace) ──────────────────────────────────────── */
+/* Hidden by default (desktop). The @media block below switches it on.          */
+.mobile-workspace-wall {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+}
+/* Subtle CRT scanline texture — matches the topbar */
+.mobile-workspace-wall::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(255,255,255,0.018) 3px, rgba(255,255,255,0.018) 4px
+  );
+  pointer-events: none;
+}
+.mw-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 320px;
+}
+.mw-logo {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--oe-green);
+  text-shadow: 0 0 14px rgba(74,144,104,0.40);
+  margin-bottom: 24px;
+}
+.mw-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--oe-green-dim);
+  opacity: 0.45;
+  margin-bottom: 32px;
+}
+.mw-headline {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.mw-body {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink-muted);
+  margin-bottom: 28px;
+}
+.mw-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--oe-green);
+  background: var(--oe-green-weak);
+  border: 1px solid var(--oe-green-dim);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  line-height: 1.6;
+}
+
+/* ─── Responsive breakpoint ──────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Workspace: swap in the mobile wall, hide the 3-column layout */
+  .mobile-workspace-wall { display: flex; }
+  .workspace             { display: none; }
+
+  /* Home: keep cards legible on narrow screens */
+  .home-main {
+    padding: 24px 16px 40px;
+  }
+  .home-title-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .home-item {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .home-item-actions {
+    width: 100%;
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+  }
+}

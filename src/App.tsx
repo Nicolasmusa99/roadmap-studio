@@ -202,7 +202,22 @@ function RoadmapWorkspace({
   }
 
   return (
-    <div className="workspace">
+    <>
+      <div className="mobile-workspace-wall" aria-hidden="true">
+        <div className="mw-inner">
+          <div className="mw-logo">◉ Roadmap Studio</div>
+          <div className="mw-divider" />
+          <div className="mw-headline">Built for desktop</div>
+          <p className="mw-body">
+            The tree view, Gantt timeline, and live scheduling panels
+            require a large screen — they can't be rearranged for touch or narrow viewports.
+          </p>
+          <div className="mw-cta">
+            Open this on a laptop or desktop browser for the full experience.
+          </div>
+        </div>
+      </div>
+      <div className="workspace">
       <TopBar
         datasets={state.state.datasets}
         onReset={state.reset}
@@ -329,5 +344,6 @@ function RoadmapWorkspace({
         />
       )}
     </div>
+    </>
   )
 }
