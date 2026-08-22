@@ -8,6 +8,7 @@ import { milestoneForecast, type MilestoneForecast } from '../lib/milestones'
 import { validateEpicMove, validateStoryMove, reorderArray, type ReorderResult } from '../lib/reorder'
 import { clampMvpPct } from '../lib/validation'
 import { applyEstimationAction } from '../lib/estimation'
+import { track } from '../lib/analytics'
 import { removeStoryFromState, removeEpicFromState, removeRoleFromState, removeTagFromState, removeSectionFromState } from '../lib/mutations'
 
 export interface RoadmapState {
@@ -92,6 +93,7 @@ export function useRoadmapState(initialState?: AppState): RoadmapState {
         teamRoles: [...s.config.teamRoles, { id, name: name.trim(), people: 1 }],
       },
     }))
+    track('role_created')
     return id
   }, [])
 
@@ -123,6 +125,7 @@ export function useRoadmapState(initialState?: AppState): RoadmapState {
         riskLayers: [...s.config.riskLayers, { id, name: name.trim(), active: true }],
       },
     }))
+    track('tag_created')
     return id
   }, [])
 

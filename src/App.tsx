@@ -5,6 +5,7 @@ import type { StoredRoadmap } from './lib/storage.ts'
 import { dependentsOf, storiesUsingRole, storiesUsingTag } from './lib/mutations.ts'
 import type { NewStoryInput } from './lib/types.ts'
 import type { PreparedImport } from './lib/csvImport.ts'
+import { track } from './lib/analytics.ts'
 import TopBar from './components/TopBar.tsx'
 import LeftPanel from './components/LeftPanel.tsx'
 import TreeView from './components/TreeView.tsx'
@@ -125,6 +126,7 @@ function RoadmapWorkspace({
 
   function handleCreateMilestone(name: string, target: string, storyIds: string[]) {
     const id = state.addMilestone(name, target, storyIds)
+    track('checkpoint_created')
     setModalOpen(false)
     setView('timeline')
     selectMilestone(id)
@@ -156,12 +158,17 @@ function RoadmapWorkspace({
   function handleSaveStory(fields: NewStoryInput) {
     if (!storyModal) return
     const id = state.addStory(storyModal.epicId, fields)
+    track('story_created', { source: 'manual' })
     setStoryModal(null)
     selectStory(id)
   }
 
   function handleImportStories(prepared: PreparedImport) {
     state.importBatch(prepared)
+    track('csv_imported', { story_count: prepared.rows.length })
+    for (let i = 0; i < prepared.rows.length; i++) {
+      track('story_created', { source: 'import' })
+    }
     setImportOpen(false)
     setView('tree')
   }

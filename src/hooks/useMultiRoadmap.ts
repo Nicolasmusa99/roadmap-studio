@@ -3,6 +3,7 @@ import type { AppState } from '../lib/types'
 import type { StoredRoadmap, StorageError } from '../lib/storage'
 import { loadStore, saveStore, SCHEMA_VERSION } from '../lib/storage'
 import { createInitialState } from '../data/baseline'
+import { track } from '../lib/analytics'
 
 export interface MultiRoadmapState {
   roadmaps: StoredRoadmap[]
@@ -40,6 +41,7 @@ export function useMultiRoadmap(): MultiRoadmapState {
     }
     setRoadmaps(prev => [...prev, newRoadmap])
     setActiveId(id)
+    track('roadmap_created')
     return id
   }, [])
 

@@ -5,6 +5,7 @@ import { parseDate } from '../lib/calendar.ts'
 import { storyDegradation } from '../lib/threats.ts'
 import { storyRiceScore, storyTotalDays } from '../lib/aggregation.ts'
 import { useI18n } from '../i18n/I18nContext.tsx'
+import { track } from '../lib/analytics.ts'
 
 interface Props {
   story: Story | null
@@ -100,6 +101,8 @@ export default function RightPanel({
       draft.rice && draft.rice.reach > 0 && draft.rice.impact > 0 && draft.rice.confidence > 0
         ? { ...draft.rice }
         : undefined
+    // Fire rice_used only when RICE is set for the first time on this story.
+    if (rice && !story?.rice) track('rice_used')
     onUpdateStory(draft.id, { ...draft, roleEfforts: cleanedRoleEfforts, rice })
     setMode('read')
     setDraft(null)
