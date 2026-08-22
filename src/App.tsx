@@ -4,6 +4,7 @@ import { useMultiRoadmap } from './hooks/useMultiRoadmap.ts'
 import type { StoredRoadmap } from './lib/storage.ts'
 import { dependentsOf, storiesUsingRole, storiesUsingTag } from './lib/mutations.ts'
 import type { NewStoryInput } from './lib/types.ts'
+import type { PreparedImport } from './lib/csvImport.ts'
 import TopBar from './components/TopBar.tsx'
 import LeftPanel from './components/LeftPanel.tsx'
 import TreeView from './components/TreeView.tsx'
@@ -17,7 +18,6 @@ import StoryModal from './components/StoryModal.tsx'
 import HomeScreen from './components/HomeScreen.tsx'
 import CsvImportModal from './components/CsvImportModal.tsx'
 import { useI18n } from './i18n/I18nContext.tsx'
-import type { ImportedRow } from './lib/csvImport.ts'
 
 // ── Top-level router ──────────────────────────────────────────────────────────
 // Manages the collection of roadmaps. When activeId is null, the home screen is
@@ -160,10 +160,8 @@ function RoadmapWorkspace({
     selectStory(id)
   }
 
-  function handleImportStories(rows: ImportedRow[]) {
-    for (const row of rows) {
-      state.addStory(row.epicId, row.fields)
-    }
+  function handleImportStories(prepared: PreparedImport) {
+    state.importBatch(prepared)
     setImportOpen(false)
     setView('tree')
   }
@@ -368,6 +366,7 @@ function RoadmapWorkspace({
           teamRoles={state.state.config.teamRoles}
           effortScale={state.state.config.effortScale}
           riskLayers={state.state.config.riskLayers}
+          defaultComponentId={state.state.components[0]?.id ?? ''}
           onImport={handleImportStories}
           onClose={() => setImportOpen(false)}
         />

@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import type { AppState, ScheduledStory, Story, NewStoryInput } from '../lib/types'
+import type { PreparedImport } from '../lib/csvImport'
 import { createInitialState } from '../data/baseline'
 import { schedule } from '../lib/scheduler'
 import { storiesInScope } from '../lib/threats'
@@ -30,6 +31,7 @@ export interface RoadmapState {
   reorderEpic: (movingId: string, newIndex: number) => ReorderResult
   reorderStory: (epicId: string, movingId: string, newIndex: number) => ReorderResult
   addMilestone: (name: string, target: string, storyIds: string[]) => string
+  importBatch: (prepared: PreparedImport) => void
   addSection: (name: string) => string
   renameSection: (sectionId: string, name: string) => void
   deleteSection: (sectionId: string) => void
@@ -293,6 +295,64 @@ export function useRoadmapState(initialState?: AppState): RoadmapState {
     [state.stories],
   )
 
+  // Atomically apply a PreparedImport: create new tags, create new epics (mapping
+  // temp IDs → real IDs), then add all stories. Done in one setState to avoid
+  // Date.now() collisions and redundant re-renders from sequential mutations.
+  const importBatch = useCallback((prepared: PreparedImport): void => {
+    const batchTs = Date.now()
+    setState(s => {
+      let ns = { ...s }
+
+      // 1. Create new tags, skipping any that match an existing name.
+      if (prepared.newTags.length > 0) {
+        const existingNames = new Set(ns.config.riskLayers.map(l => l.name.toLowerCase().trim()))
+        const freshLayers = [...ns.config.riskLayers]
+        prepared.newTags.forEach((spec, i) => {
+          const norm = spec.name.toLowerCase().trim()
+          if (norm && !existingNames.has(norm)) {
+            freshLayers.push({ id: `tag-import-${batchTs}-${i}`, name: spec.name.trim(), active: true })
+            existingNames.add(norm)
+          }
+        })
+        ns = { ...ns, config: { ...ns.config, riskLayers: freshLayers } }
+      }
+
+      // 2. Create new epics and build tempId → realId map for story resolution.
+      const tempToReal = new Map<string, string>()
+      if (prepared.newEpics.length > 0) {
+        const freshEpics = [...ns.epics]
+        prepared.newEpics.forEach((spec, i) => {
+          const realId = `epic-import-${batchTs}-${i}`
+          freshEpics.push({ id: realId, componentId: spec.componentId, name: spec.name, isProtected: false })
+          tempToReal.set(spec.tempId, realId)
+        })
+        ns = { ...ns, epics: freshEpics }
+      }
+
+      // 3. Add stories. Replace temp epic IDs with the real ones assigned above.
+      const freshStories = [...ns.stories]
+      prepared.rows.forEach((row, i) => {
+        const epicId = tempToReal.get(row.epicId) ?? row.epicId
+        const fields = row.fields
+        const estimationState = fields.roleEfforts.some(re => re.days > 0) ? 'manual' : 'unestimated'
+        const isDraft = !fields.title.trim() || !fields.asA.trim() || !fields.iWant.trim() || !fields.soThat.trim()
+        freshStories.push({
+          id: `H-import-${batchTs}-${i}`,
+          epicId,
+          ...fields,
+          mvpPct: clampMvpPct(fields.mvpPct),
+          estimationState,
+          isDraft,
+          isProtected: false,
+          useCases: [],
+          rules: [],
+          datasetIds: [],
+        })
+      })
+      return { ...ns, stories: freshStories }
+    })
+  }, [])
+
   // Create a transversal milestone (US-015). target is a committed date (YYYY-MM-DD);
   // forecast is always derived from the schedule, never stored. Returns the new id.
   const addMilestone = useCallback((name: string, target: string, storyIds: string[]): string => {
@@ -372,6 +432,7 @@ export function useRoadmapState(initialState?: AppState): RoadmapState {
     reorderEpic,
     reorderStory,
     addMilestone,
+    importBatch,
     addSection,
     renameSection,
     deleteSection,

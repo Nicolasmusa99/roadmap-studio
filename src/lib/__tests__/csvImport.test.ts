@@ -132,16 +132,66 @@ describe('applyMapping — epic', () => {
     expect(r.rows[0].epicId).toBe('epic-1')
   })
 
-  it('falls back to fallbackEpicId when epic name does not match', () => {
+  // Behavior change: unknown epic names are auto-created, not fallen back to fallbackEpicId.
+  // The fallback only applies to rows with an EMPTY epic cell.
+  it('creates a new epic spec for an unknown epic name (not fallback)', () => {
     const parsed = makeOk(['title', 'epic'], [{ title: 'Story A', epic: 'Unknown Epic' }])
     const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: 'epic', fallbackEpicId: 'epic-2' }, STATE)
-    expect(r.rows[0].epicId).toBe('epic-2')
+    // Should create a new epic, not use fallback
+    expect(r.newEpics).toHaveLength(1)
+    expect(r.newEpics[0].name).toBe('Unknown Epic')
+    expect(r.rows[0].epicId).toBe(r.newEpics[0].tempId)
   })
 
   it('falls back when epic cell is empty', () => {
     const parsed = makeOk(['title', 'epic'], [{ title: 'Story A', epic: '' }])
     const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: 'epic', fallbackEpicId: 'epic-2' }, STATE)
     expect(r.rows[0].epicId).toBe('epic-2')
+  })
+
+  it('creates General stage when epic cell is empty and no fallback is set', () => {
+    const parsed = makeOk(['title', 'epic'], [{ title: 'Story A', epic: '' }])
+    const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: 'epic', fallbackEpicId: '' }, STATE)
+    expect(r.newEpics).toHaveLength(1)
+    expect(r.newEpics[0].name).toBe('General')
+    expect(r.rows[0].epicId).toBe(r.newEpics[0].tempId)
+  })
+
+  it('creates General stage when no epicCol and no fallback', () => {
+    const parsed = makeOk(['title'], [{ title: 'Story A' }])
+    const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: '', fallbackEpicId: '' }, STATE)
+    expect(r.newEpics).toHaveLength(1)
+    expect(r.newEpics[0].name).toBe('General')
+    expect(r.rows[0].epicId).toBe(r.newEpics[0].tempId)
+  })
+
+  it('deduplicates new epics case-insensitively (same epic name in multiple rows)', () => {
+    const parsed = makeOk(
+      ['title', 'epic'],
+      [
+        { title: 'Story A', epic: 'New Stage' },
+        { title: 'Story B', epic: 'new stage' },   // same, different case
+        { title: 'Story C', epic: 'NEW STAGE' },   // same again
+      ],
+    )
+    const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: 'epic', fallbackEpicId: '' }, STATE)
+    expect(r.newEpics).toHaveLength(1)
+    // All three rows point to the same tempId
+    expect(r.rows[0].epicId).toBe(r.newEpics[0].tempId)
+    expect(r.rows[1].epicId).toBe(r.newEpics[0].tempId)
+    expect(r.rows[2].epicId).toBe(r.newEpics[0].tempId)
+  })
+
+  it('tempId is stable and prefixed with __new_epic__', () => {
+    const parsed = makeOk(['title', 'epic'], [{ title: 'Story A', epic: 'Fresh Stage' }])
+    const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: 'epic', fallbackEpicId: '' }, STATE)
+    expect(r.newEpics[0].tempId).toMatch(/^__new_epic__/)
+  })
+
+  it('attaches defaultComponentId to new epic specs', () => {
+    const parsed = makeOk(['title', 'epic'], [{ title: 'Story A', epic: 'Brand New' }])
+    const r = applyMapping(parsed, { ...DEFAULT_MAPPING, epicCol: 'epic', fallbackEpicId: '' }, STATE, 'comp-general')
+    expect(r.newEpics[0].componentId).toBe('comp-general')
   })
 })
 
@@ -213,16 +263,37 @@ describe('applyMapping — tags', () => {
     expect(r.rows[0].fields.labels).toEqual(['Security', 'Privacy'])
   })
 
-  it('ignores tags that do not match any risk layer', () => {
+  // Behavior change: unknown tags are auto-created, not silently dropped.
+  it('creates new tag spec for an unknown tag name (not dropped)', () => {
     const parsed = makeOk(['title', 'tags'], [{ title: 'Story A', tags: 'Security,Unknown' }])
     const r = applyMapping(parsed, { ...DEFAULT_MAPPING, tagsCol: 'tags' }, STATE)
-    expect(r.rows[0].fields.labels).toEqual(['Security'])
+    // Security matches existing; Unknown is new
+    expect(r.rows[0].fields.labels).toContain('Security')
+    expect(r.rows[0].fields.labels).toContain('Unknown')
+    expect(r.newTags).toHaveLength(1)
+    expect(r.newTags[0].name).toBe('Unknown')
   })
 
-  it('returns empty labels when no tags match', () => {
+  it('creates new tags for all unknown names (none match)', () => {
     const parsed = makeOk(['title', 'tags'], [{ title: 'Story A', tags: 'Nope,Also Nope' }])
     const r = applyMapping(parsed, { ...DEFAULT_MAPPING, tagsCol: 'tags' }, STATE)
-    expect(r.rows[0].fields.labels).toHaveLength(0)
+    expect(r.rows[0].fields.labels).toHaveLength(2)
+    expect(r.newTags).toHaveLength(2)
+  })
+
+  it('deduplicates new tags case-insensitively across rows', () => {
+    const parsed = makeOk(
+      ['title', 'tags'],
+      [
+        { title: 'Story A', tags: 'NewTag' },
+        { title: 'Story B', tags: 'newtag' },  // same, different case
+      ],
+    )
+    const r = applyMapping(parsed, { ...DEFAULT_MAPPING, tagsCol: 'tags' }, STATE)
+    expect(r.newTags).toHaveLength(1)
+    // Both rows get the same label name
+    expect(r.rows[0].fields.labels).toContain(r.newTags[0].name)
+    expect(r.rows[1].fields.labels).toContain(r.newTags[0].name)
   })
 })
 
@@ -390,6 +461,101 @@ describe('applyMapping — many columns', () => {
     const r = applyMapping(parsed, DEFAULT_MAPPING, STATE)
     // applyMapping works on the already-filtered rows; the 2 dropped are upstream
     expect(r.rows).toHaveLength(1)
+    expect(r.skipped).toBe(0)
+  })
+})
+
+// ─── applyMapping — empty roadmap (no existing epics or tags) ─────────────────
+// This is the primary use case that was broken before the auto-create feature.
+
+const EMPTY_STATE: Pick<AppState, 'epics' | 'config'> = {
+  epics: [],
+  config: {
+    effortScale: DEFAULT_EFFORT_SCALE,
+    riskLayers: [],
+    teamRoles: ROLES,
+    calendarConfig: { startDate: '2026-08-24', daysPerWeek: 5, holidays: [] },
+  },
+}
+
+describe('applyMapping — empty roadmap', () => {
+  it('imports all stories into auto-created epics when roadmap has no epics', () => {
+    const parsed = makeOk(
+      ['title', 'epic'],
+      [
+        { title: 'Login',     epic: 'Auth' },
+        { title: 'Dashboard', epic: 'Analytics' },
+        { title: 'Profile',   epic: 'Auth' },       // same epic as first row
+      ],
+    )
+    const mapping: ImportMapping = {
+      titleCol: 'title',
+      epicCol: 'epic',
+      fallbackEpicId: '',
+      effortCol: '',
+      effortRoleId: '',
+      tagsCol: '',
+    }
+    const r = applyMapping(parsed, mapping, EMPTY_STATE)
+    expect(r.rows).toHaveLength(3)
+    expect(r.skipped).toBe(0)
+    // Two distinct epic names → two specs
+    expect(r.newEpics).toHaveLength(2)
+    const authSpec = r.newEpics.find(e => e.name === 'Auth')!
+    const analyticsSpec = r.newEpics.find(e => e.name === 'Analytics')!
+    expect(authSpec).toBeDefined()
+    expect(analyticsSpec).toBeDefined()
+    // Login and Profile go to Auth's tempId; Dashboard goes to Analytics's tempId
+    expect(r.rows[0].epicId).toBe(authSpec.tempId)
+    expect(r.rows[1].epicId).toBe(analyticsSpec.tempId)
+    expect(r.rows[2].epicId).toBe(authSpec.tempId)
+  })
+
+  it('creates new tags when roadmap has no tags', () => {
+    const parsed = makeOk(
+      ['title', 'epic', 'tags'],
+      [
+        { title: 'Login', epic: 'Auth', tags: 'Security,Compliance' },
+        { title: 'Export', epic: 'Auth', tags: 'Privacy' },
+      ],
+    )
+    const mapping: ImportMapping = {
+      titleCol: 'title',
+      epicCol: 'epic',
+      fallbackEpicId: '',
+      effortCol: '',
+      effortRoleId: '',
+      tagsCol: 'tags',
+    }
+    const r = applyMapping(parsed, mapping, EMPTY_STATE)
+    expect(r.newTags).toHaveLength(3)
+    const tagNames = r.newTags.map(t => t.name).sort()
+    expect(tagNames).toEqual(['Compliance', 'Privacy', 'Security'])
+    expect(r.rows[0].fields.labels).toEqual(['Security', 'Compliance'])
+    expect(r.rows[1].fields.labels).toEqual(['Privacy'])
+  })
+
+  it('preview counts match what importBatch would create', () => {
+    const parsed = makeOk(
+      ['title', 'epic', 'tags'],
+      [
+        { title: 'S1', epic: 'Stage A', tags: 'Tag X' },
+        { title: 'S2', epic: 'Stage B', tags: 'Tag Y' },
+        { title: 'S3', epic: 'Stage A', tags: 'Tag X' },  // duplicate epic + tag
+      ],
+    )
+    const mapping: ImportMapping = {
+      titleCol: 'title',
+      epicCol: 'epic',
+      fallbackEpicId: '',
+      effortCol: '',
+      effortRoleId: '',
+      tagsCol: 'tags',
+    }
+    const r = applyMapping(parsed, mapping, EMPTY_STATE)
+    expect(r.rows).toHaveLength(3)
+    expect(r.newEpics).toHaveLength(2)   // Stage A, Stage B
+    expect(r.newTags).toHaveLength(2)    // Tag X, Tag Y
     expect(r.skipped).toBe(0)
   })
 })

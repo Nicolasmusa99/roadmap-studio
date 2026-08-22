@@ -5,7 +5,7 @@ import {
   applyMapping,
   type CsvParseOk,
   type ImportMapping,
-  type ImportedRow,
+  type PreparedImport,
 } from '../lib/csvImport'
 
 interface Props {
@@ -13,7 +13,8 @@ interface Props {
   teamRoles: TeamRole[]
   effortScale: EffortScaleStep[]
   riskLayers: RiskLayer[]
-  onImport: (rows: ImportedRow[]) => void
+  defaultComponentId: string
+  onImport: (prepared: PreparedImport) => void
   onClose: () => void
 }
 
@@ -55,6 +56,7 @@ export default function CsvImportModal({
   teamRoles,
   effortScale,
   riskLayers,
+  defaultComponentId,
   onImport,
   onClose,
 }: Props) {
@@ -76,12 +78,13 @@ export default function CsvImportModal({
     tagsCol:        NONE,
   })
 
-  // Re-derive preview whenever we enter the preview step
-  const importResult = parsed
+  // Re-derive preview whenever mapping or parsed changes.
+  // PreparedImport is a pure description — no side effects yet.
+  const importResult: PreparedImport | null = parsed
     ? applyMapping(parsed, mapping, {
         epics,
         config: { effortScale, riskLayers, teamRoles, calendarConfig: { startDate: '', daysPerWeek: 5, holidays: [] } },
-      })
+      }, defaultComponentId)
     : null
 
   // ── File reading ────────────────────────────────────────────────────────────
@@ -99,11 +102,11 @@ export default function CsvImportModal({
         return
       }
       setParsed(result)
-      // Auto-pick titleCol if there's a column named "title"
-      const titleGuess = result.headers.find(h => h.toLowerCase() === 'title') ?? NONE
-      const epicGuess  = result.headers.find(h => h.toLowerCase() === 'epic') ?? NONE
-      const effortGuess= result.headers.find(h => /effort|estim/i.test(h)) ?? NONE
-      const tagsGuess  = result.headers.find(h => /tag|label/i.test(h)) ?? NONE
+      // Auto-pick columns by common names
+      const titleGuess  = result.headers.find(h => h.toLowerCase() === 'title') ?? NONE
+      const epicGuess   = result.headers.find(h => h.toLowerCase() === 'epic') ?? NONE
+      const effortGuess = result.headers.find(h => /effort|estim/i.test(h)) ?? NONE
+      const tagsGuess   = result.headers.find(h => /tag|label/i.test(h)) ?? NONE
       setMapping(m => ({
         ...m,
         titleCol: titleGuess,
@@ -124,7 +127,6 @@ export default function CsvImportModal({
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) readFile(file)
-    // Reset input so the same file can be re-selected
     e.target.value = ''
   }
 
@@ -138,7 +140,7 @@ export default function CsvImportModal({
 
   function handleConfirm() {
     if (!importResult) return
-    onImport(importResult.rows)
+    onImport(importResult)
   }
 
   // ── Patch helper ───────────────────────────────────────────────────────────
@@ -150,7 +152,15 @@ export default function CsvImportModal({
   // ── Steps ───────────────────────────────────────────────────────────────────
 
   const headers = parsed?.headers ?? []
-  const canPreview = mapping.titleCol !== NONE && epics.length > 0
+
+  // Preview is available as soon as title column is set.
+  // An empty roadmap is fine — epics will be created from the CSV.
+  const canPreview = mapping.titleCol !== NONE
+
+  // Total objects to be created (for button label)
+  const totalNewEpics = importResult?.newEpics.length ?? 0
+  const totalNewTags  = importResult?.newTags.length  ?? 0
+  const totalStories  = importResult?.rows.length     ?? 0
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -262,7 +272,7 @@ export default function CsvImportModal({
               {/* Epic */}
               <div className="csv-map-row">
                 <div className="csv-map-field">
-                  <span className="csv-map-field-name">EPIC</span>
+                  <span className="csv-map-field-name">EPIC / STAGE</span>
                 </div>
                 <div className="csv-map-controls">
                   <ColSelect
@@ -271,20 +281,25 @@ export default function CsvImportModal({
                     onChange={v => patch({ epicCol: v })}
                     placeholder="— no column —"
                   />
-                  <span className="csv-map-sub-label">Fallback:</span>
-                  <select
-                    className="csv-col-select"
-                    value={mapping.fallbackEpicId}
-                    onChange={e => patch({ fallbackEpicId: e.target.value })}
-                  >
-                    {epics.map(ep => (
-                      <option key={ep.id} value={ep.id}>{ep.name}</option>
-                    ))}
-                    {epics.length === 0 && (
-                      <option value="">No epics yet</option>
-                    )}
-                  </select>
+                  <span className="csv-map-sub-label">Blank rows fallback:</span>
+                  {epics.length > 0 ? (
+                    <select
+                      className="csv-col-select"
+                      value={mapping.fallbackEpicId}
+                      onChange={e => patch({ fallbackEpicId: e.target.value })}
+                    >
+                      <option value="">— creates 'General' stage —</option>
+                      {epics.map(ep => (
+                        <option key={ep.id} value={ep.id}>{ep.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="csv-map-note">Empty rows → 'General' stage</span>
+                  )}
                 </div>
+              </div>
+              <div className="csv-map-note">
+                Stage names from CSV are created automatically if they don't exist yet.
               </div>
 
               {/* Effort */}
@@ -335,12 +350,12 @@ export default function CsvImportModal({
               </div>
               {mapping.tagsCol && riskLayers.length > 0 && (
                 <div className="csv-map-note">
-                  Only tags matching: {riskLayers.map(l => l.name).join(' · ')}
+                  Existing: {riskLayers.map(l => l.name).join(' · ')} · Unknown tags created automatically
                 </div>
               )}
               {mapping.tagsCol && riskLayers.length === 0 && (
-                <div className="csv-map-note csv-map-note--warn">
-                  No tags configured in this roadmap. Tags column will be ignored.
+                <div className="csv-map-note">
+                  No tags configured yet — new tags from this column will be created automatically.
                 </div>
               )}
 
@@ -367,11 +382,35 @@ export default function CsvImportModal({
             <div className="modal-title">READY TO IMPORT</div>
 
             <div className="csv-preview-summary">
-              <span className="csv-preview-count">{importResult.rows.length}</span>
-              <span className="csv-preview-label"> stories will be created</span>
+              <span className="csv-preview-count">{totalStories}</span>
+              <span className="csv-preview-label"> {totalStories === 1 ? 'story' : 'stories'} will be created</span>
             </div>
 
-            {/* Parse-level drops (malformed rows) — show before mapping-level skips */}
+            {/* New epics to be auto-created */}
+            {totalNewEpics > 0 && (
+              <div className="csv-new-items-note">
+                <span className="csv-new-items-label">
+                  {totalNewEpics} new stage{totalNewEpics !== 1 ? 's' : ''} will be created:
+                </span>
+                <span className="csv-new-items-list">
+                  {importResult.newEpics.map(e => e.name).join(', ')}
+                </span>
+              </div>
+            )}
+
+            {/* New tags to be auto-created */}
+            {totalNewTags > 0 && (
+              <div className="csv-new-items-note">
+                <span className="csv-new-items-label">
+                  {totalNewTags} new tag{totalNewTags !== 1 ? 's' : ''} will be created:
+                </span>
+                <span className="csv-new-items-list">
+                  {importResult.newTags.map(t => t.name).join(', ')}
+                </span>
+              </div>
+            )}
+
+            {/* Parse-level drops (malformed rows) */}
             {parsed && parsed.parseWarnings > 0 && (
               <div className="csv-skip-note">
                 {parsed.parseWarnings} row{parsed.parseWarnings > 1 ? 's' : ''} dropped
@@ -385,18 +424,22 @@ export default function CsvImportModal({
               </div>
             )}
 
-            {importResult.rows.length === 0 && (
+            {totalStories === 0 && (
               <div className="csv-skip-note csv-skip-note--empty">
                 Nothing to import. Make sure you selected the correct title column and that rows have values.
               </div>
             )}
 
-            {importResult.rows.length > 0 && (
+            {totalStories > 0 && (
               <>
-                <div className="csv-preview-subtitle">Preview (first {Math.min(5, importResult.rows.length)}):</div>
+                <div className="csv-preview-subtitle">Preview (first {Math.min(5, totalStories)}):</div>
                 <ul className="csv-preview-list">
                   {importResult.rows.slice(0, 5).map((row, i) => {
-                    const epic = epics.find(e => e.id === row.epicId)
+                    // Resolve epic name: existing epic or new epic spec
+                    const existingEpic = epics.find(e => e.id === row.epicId)
+                    const newEpic = importResult.newEpics.find(e => e.tempId === row.epicId)
+                    const epicName = existingEpic?.name ?? newEpic?.name
+
                     const hasEffort = row.fields.roleEfforts.length > 0
                     const effortDays = hasEffort ? row.fields.roleEfforts[0].days : null
                     const effortLabel = effortDays !== null
@@ -406,21 +449,31 @@ export default function CsvImportModal({
                       <li key={i} className="csv-preview-item">
                         <span className="csv-preview-item-title">{row.fields.title}</span>
                         <span className="csv-preview-item-meta">
-                          {epic && <span className="csv-preview-tag">{epic.name}</span>}
+                          {epicName && (
+                            <span className={`csv-preview-tag${newEpic ? ' csv-preview-tag--new' : ''}`}>
+                              {epicName}{newEpic ? ' ✦' : ''}
+                            </span>
+                          )}
                           {effortLabel && <span className="csv-preview-tag">{effortLabel}</span>}
-                          {row.fields.labels.map(l => (
-                            <span key={l} className="csv-preview-tag csv-preview-tag--label">{l}</span>
-                          ))}
+                          {row.fields.labels.map(l => {
+                            const isNew = importResult.newTags.some(t => t.name === l)
+                            return (
+                              <span key={l} className={`csv-preview-tag csv-preview-tag--label${isNew ? ' csv-preview-tag--new' : ''}`}>
+                                {l}{isNew ? ' ✦' : ''}
+                              </span>
+                            )
+                          })}
                         </span>
                       </li>
                     )
                   })}
-                  {importResult.rows.length > 5 && (
+                  {totalStories > 5 && (
                     <li className="csv-preview-more">
-                      …and {importResult.rows.length - 5} more
+                      …and {totalStories - 5} more
                     </li>
                   )}
                 </ul>
+                <div className="csv-preview-legend">✦ = will be created</div>
               </>
             )}
 
@@ -428,10 +481,12 @@ export default function CsvImportModal({
               <button className="modal-btn modal-btn--ghost" onClick={() => setStep('map')}>← Back</button>
               <button
                 className="modal-btn modal-btn--primary"
-                disabled={importResult.rows.length === 0}
+                disabled={totalStories === 0}
                 onClick={handleConfirm}
               >
-                Import {importResult.rows.length} {importResult.rows.length === 1 ? 'story' : 'stories'}
+                Import {totalStories} {totalStories === 1 ? 'story' : 'stories'}
+                {totalNewEpics > 0 ? ` +${totalNewEpics} stage${totalNewEpics !== 1 ? 's' : ''}` : ''}
+                {totalNewTags  > 0 ? ` +${totalNewTags} tag${totalNewTags   !== 1 ? 's' : ''}` : ''}
               </button>
             </div>
           </>
