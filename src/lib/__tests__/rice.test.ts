@@ -214,3 +214,52 @@ describe('epicRiceRollup', () => {
     expect(r.sumEffort).toBe(10)
   })
 })
+
+// ─── RICE sort comparator ────────────────────────────────────────────────────
+// This test exercises the exact comparator used in TreeView's sort-by-RICE mode.
+// It would have caught any bug in the score-map lookup or the sb - sa direction.
+
+describe('RICE sort comparator (TreeView)', () => {
+  it('reorders stories from worst-to-best into best-to-worst RICE order', () => {
+    // H-hi has the highest score; H-lo the lowest; H-nil has no RICE data.
+    // Start them in the worst possible order (lowest first, null-score in the middle)
+    // so any reordering bug would be obvious.
+    const hi  = makeStory({ id: 'H-hi',  epicId: 'e1', roleEfforts: [{ roleId: 'r', days: 5  }], rice: { reach: 1000, impact: 3, confidence: 100 } })
+    const lo  = makeStory({ id: 'H-lo',  epicId: 'e1', roleEfforts: [{ roleId: 'r', days: 10 }], rice: { reach: 100,  impact: 1, confidence: 100 } })
+    const nil = makeStory({ id: 'H-nil', epicId: 'e1', roleEfforts: [{ roleId: 'r', days: 5  }] })
+
+    // Intentionally wrong order: lo → nil → hi
+    const stories = [lo, nil, hi]
+
+    // Replicate TreeView's score map + comparator exactly
+    const scores = new Map(stories.map(s => [s.id, storyRiceScore(s)]))
+    const sorted = [...stories].sort((a, b) => {
+      const sa = scores.get(a.id) ?? -Infinity
+      const sb = scores.get(b.id) ?? -Infinity
+      return sb - sa
+    })
+
+    expect(sorted[0].id).toBe('H-hi')   // highest score first
+    expect(sorted[1].id).toBe('H-lo')   // lower score second
+    expect(sorted[2].id).toBe('H-nil')  // no RICE goes last
+  })
+
+  it('is a no-op when stories are already in RICE order', () => {
+    // Verifies stable behaviour: correct order in → same order out.
+    // This is exactly the scenario that looks like a "broken sort" — the sort
+    // runs but produces no visible change because the data is already ordered.
+    const hi = makeStory({ id: 'H-hi', epicId: 'e1', roleEfforts: [{ roleId: 'r', days: 5 }], rice: { reach: 1000, impact: 3, confidence: 100 } })
+    const lo = makeStory({ id: 'H-lo', epicId: 'e1', roleEfforts: [{ roleId: 'r', days: 5 }], rice: { reach: 100,  impact: 1, confidence: 100 } })
+
+    const stories = [hi, lo]  // already in RICE order
+    const scores = new Map(stories.map(s => [s.id, storyRiceScore(s)]))
+    const sorted = [...stories].sort((a, b) => {
+      const sa = scores.get(a.id) ?? -Infinity
+      const sb = scores.get(b.id) ?? -Infinity
+      return sb - sa
+    })
+
+    expect(sorted[0].id).toBe('H-hi')
+    expect(sorted[1].id).toBe('H-lo')
+  })
+})

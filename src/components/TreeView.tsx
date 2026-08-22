@@ -118,6 +118,21 @@ export default function TreeView({
     [state.epics, state.stories],
   )
 
+  // Global RICE ranks: story id → rank position (1 = highest score).
+  // Only populated when riceSort is active so the badge renders "◈ 320.0 #1".
+  // Without this, a story already at the top of its epic shows no visible
+  // effect from sorting — the most common reason "Sort by RICE" appears broken.
+  const riceGlobalRanks = useMemo(() => {
+    if (!riceSort) return new Map<string, number>()
+    const scored: Array<{ id: string; score: number }> = []
+    for (const s of state.stories) {
+      const score = storyRiceScore(s)
+      if (score !== null) scored.push({ id: s.id, score })
+    }
+    scored.sort((a, b) => b.score - a.score)
+    return new Map(scored.map((x, i) => [x.id, i + 1]))
+  }, [riceSort, state.stories])
+
   const epicIndexMap = useMemo(() => {
     const map = new Map<string, number>()
     state.epics.forEach((e, i) => map.set(e.id, i + 1))
@@ -481,9 +496,17 @@ export default function TreeView({
                                   )}
                                   {(() => {
                                     const rs = storyRiceScores.get(story.id)
-                                    return rs !== null && rs !== undefined
-                                      ? <span className="story-badge story-badge--rice" title={`RICE score: ${rs.toFixed(2)}`}>◈ {rs.toFixed(1)}</span>
-                                      : null
+                                    if (rs === null || rs === undefined) return null
+                                    const rank = riceGlobalRanks.get(story.id)
+                                    const total = riceGlobalRanks.size
+                                    return (
+                                      <span
+                                        className="story-badge story-badge--rice"
+                                        title={`RICE score: ${rs.toFixed(2)}${rank ? ` · global rank #${rank} of ${total}` : ''}`}
+                                      >
+                                        ◈ {rs.toFixed(1)}{rank ? ` #${rank}` : ''}
+                                      </span>
+                                    )
                                   })()}
                                   {degr.degraded && (
                                     <span
